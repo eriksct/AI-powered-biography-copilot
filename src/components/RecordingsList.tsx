@@ -3,11 +3,17 @@ import { Mic, Plus, Play, Pause, RotateCcw, RotateCw, Trash2, FileText } from "l
 import { Button } from "@/components/ui/button";
 import { Recording } from "@/types/biography";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface RecordingsListProps {
   recordings: Recording[];
   onSelectRecording: (id: string) => void;
-  onTranscriptClick: (id: string) => void;
   selectedRecordingId: string | null;
 }
 
@@ -36,13 +42,21 @@ const Waveform = ({ isPlaying }: { isPlaying: boolean }) => {
 export function RecordingsList({
   recordings,
   onSelectRecording,
-  onTranscriptClick,
   selectedRecordingId,
 }: RecordingsListProps) {
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const [transcriptOpen, setTranscriptOpen] = useState(false);
+  const [selectedTranscript, setSelectedTranscript] = useState<{ name: string; transcript: string } | null>(null);
 
   const handlePlayPause = (id: string) => {
     setPlayingId(playingId === id ? null : id);
+  };
+
+  const handleTranscriptClick = (recording: Recording) => {
+    if (recording.transcript) {
+      setSelectedTranscript({ name: recording.name, transcript: recording.transcript });
+      setTranscriptOpen(true);
+    }
   };
 
   return (
@@ -97,7 +111,7 @@ export function RecordingsList({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        onTranscriptClick(recording.id);
+                        handleTranscriptClick(recording);
                       }}
                       className="flex items-center gap-1 hover:text-foreground transition-colors"
                     >
@@ -159,6 +173,23 @@ export function RecordingsList({
           );
         })}
       </div>
+
+      {/* Transcript Dialog */}
+      <Dialog open={transcriptOpen} onOpenChange={setTranscriptOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              Transcript - {selectedTranscript?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="h-[60vh] pr-4">
+            <div className="whitespace-pre-wrap text-sm text-foreground leading-relaxed">
+              {selectedTranscript?.transcript || "Aucun transcript disponible."}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
