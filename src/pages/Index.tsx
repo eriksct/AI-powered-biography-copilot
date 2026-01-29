@@ -73,13 +73,6 @@ export default function Index() {
     setSelectedRecordingId(id);
   };
 
-  const handleTranscriptClick = (id: string) => {
-    const recording = recordings.find((r) => r.id === id);
-    if (recording?.transcript) {
-      // Could open a modal or side panel with the transcript
-      console.log("Transcript:", recording.transcript);
-    }
-  };
 
   const handleSendMessage = (messageContent: string) => {
     const newMessage: Message = {
@@ -110,7 +103,6 @@ export default function Index() {
           <RecordingsList
             recordings={recordings}
             onSelectRecording={handleSelectRecording}
-            onTranscriptClick={handleTranscriptClick}
             selectedRecordingId={selectedRecordingId}
           />
         </div>
