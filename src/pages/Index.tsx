@@ -64,7 +64,7 @@ Chapitre 1
 En effet, ...`;
 
 export default function Index() {
-  const [recordings] = useState<Recording[]>(initialRecordings);
+  const [recordings, setRecordings] = useState<Recording[]>(initialRecordings);
   const [selectedRecordingId, setSelectedRecordingId] = useState<string | null>("1");
   const [content, setContent] = useState(initialContent);
   const [messages, setMessages] = useState<Message[]>(initialMessages);
@@ -73,7 +73,12 @@ export default function Index() {
     setSelectedRecordingId(id);
   };
 
-
+  const handleDeleteRecording = (id: string) => {
+    setRecordings((prev) => prev.filter((r) => r.id !== id));
+    if (selectedRecordingId === id) {
+      setSelectedRecordingId(null);
+    }
+  };
   const handleSendMessage = (messageContent: string) => {
     const newMessage: Message = {
       id: Date.now().toString(),
@@ -103,6 +108,7 @@ export default function Index() {
           <RecordingsList
             recordings={recordings}
             onSelectRecording={handleSelectRecording}
+            onDeleteRecording={handleDeleteRecording}
             selectedRecordingId={selectedRecordingId}
           />
         </div>
