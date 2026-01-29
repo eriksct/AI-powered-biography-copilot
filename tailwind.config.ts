@@ -57,6 +57,29 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        panel: {
+          DEFAULT: "hsl(var(--panel-bg))",
+          header: "hsl(var(--panel-header))",
+        },
+        editor: {
+          DEFAULT: "hsl(var(--editor-bg))",
+          shadow: "hsl(var(--editor-shadow))",
+        },
+        chat: {
+          user: "hsl(var(--chat-user))",
+          "user-foreground": "hsl(var(--chat-user-foreground))",
+          assistant: "hsl(var(--chat-assistant))",
+          "assistant-foreground": "hsl(var(--chat-assistant-foreground))",
+        },
+        waveform: {
+          DEFAULT: "hsl(var(--waveform))",
+          active: "hsl(var(--waveform-active))",
+        },
+        "active-dot": "hsl(var(--active-dot))",
+      },
+      fontFamily: {
+        serif: ["Georgia", "Cambria", "Times New Roman", "serif"],
+        sans: ["Inter", "system-ui", "sans-serif"],
       },
       borderRadius: {
         lg: "var(--radius)",
