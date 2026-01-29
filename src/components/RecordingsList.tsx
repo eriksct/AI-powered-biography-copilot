@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mic, Plus, Play, Pause, RotateCcw, RotateCw, Trash2, FileText } from "lucide-react";
+import { Mic, Plus, Play, Pause, RotateCcw, RotateCw, Trash2, FileText, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Recording } from "@/types/biography";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "sonner";
 
 interface RecordingsListProps {
   recordings: Recording[];
@@ -47,6 +48,7 @@ export function RecordingsList({
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [transcriptOpen, setTranscriptOpen] = useState(false);
   const [selectedTranscript, setSelectedTranscript] = useState<{ name: string; transcript: string } | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const handlePlayPause = (id: string) => {
     setPlayingId(playingId === id ? null : id);
@@ -56,6 +58,16 @@ export function RecordingsList({
     if (recording.transcript) {
       setSelectedTranscript({ name: recording.name, transcript: recording.transcript });
       setTranscriptOpen(true);
+      setCopied(false);
+    }
+  };
+
+  const handleCopyTranscript = async () => {
+    if (selectedTranscript?.transcript) {
+      await navigator.clipboard.writeText(selectedTranscript.transcript);
+      setCopied(true);
+      toast.success("Transcript copié !");
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -108,16 +120,18 @@ export function RecordingsList({
                   {/* Time and Transcript */}
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span>{recording.currentTime}</span>
-                    <button
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleTranscriptClick(recording);
                       }}
-                      className="flex items-center gap-1 hover:text-foreground transition-colors"
+                      className="h-7 text-xs"
                     >
                       <FileText className="w-3 h-3" />
-                      <span>Transcript</span>
-                    </button>
+                      Transcript
+                    </Button>
                   </div>
 
                   {/* Waveform */}
@@ -178,13 +192,33 @@ export function RecordingsList({
       <Dialog open={transcriptOpen} onOpenChange={setTranscriptOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh]">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              Transcript - {selectedTranscript?.name}
-            </DialogTitle>
+            <div className="flex items-center justify-between pr-8">
+              <DialogTitle className="flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                Transcript - {selectedTranscript?.name}
+              </DialogTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCopyTranscript}
+                className="flex items-center gap-2"
+              >
+                {copied ? (
+                  <>
+                    <Check className="w-4 h-4 text-green-500" />
+                    Copié
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4" />
+                    Copier
+                  </>
+                )}
+              </Button>
+            </div>
           </DialogHeader>
           <ScrollArea className="h-[60vh] pr-4">
-            <div className="whitespace-pre-wrap text-sm text-foreground leading-relaxed">
+            <div className="whitespace-pre-wrap text-sm text-foreground leading-relaxed select-text">
               {selectedTranscript?.transcript || "Aucun transcript disponible."}
             </div>
           </ScrollArea>
