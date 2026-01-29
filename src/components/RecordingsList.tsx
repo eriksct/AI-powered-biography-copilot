@@ -9,12 +9,23 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 
 interface RecordingsListProps {
   recordings: Recording[];
   onSelectRecording: (id: string) => void;
+  onDeleteRecording: (id: string) => void;
   selectedRecordingId: string | null;
 }
 
@@ -43,12 +54,15 @@ const Waveform = ({ isPlaying }: { isPlaying: boolean }) => {
 export function RecordingsList({
   recordings,
   onSelectRecording,
+  onDeleteRecording,
   selectedRecordingId,
 }: RecordingsListProps) {
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [transcriptOpen, setTranscriptOpen] = useState(false);
   const [selectedTranscript, setSelectedTranscript] = useState<{ name: string; transcript: string } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [recordingToDelete, setRecordingToDelete] = useState<Recording | null>(null);
 
   const handlePlayPause = (id: string) => {
     setPlayingId(playingId === id ? null : id);
@@ -68,6 +82,21 @@ export function RecordingsList({
       setCopied(true);
       toast.success("Transcript copié !");
       setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent, recording: Recording) => {
+    e.stopPropagation();
+    setRecordingToDelete(recording);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (recordingToDelete) {
+      onDeleteRecording(recordingToDelete.id);
+      toast.success(`"${recordingToDelete.name}" supprimé`);
+      setDeleteDialogOpen(false);
+      setRecordingToDelete(null);
     }
   };
 
@@ -177,6 +206,7 @@ export function RecordingsList({
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-destructive/70 hover:text-destructive"
+                      onClick={(e) => handleDeleteClick(e, recording)}
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -224,6 +254,24 @@ export function RecordingsList({
           </ScrollArea>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer l'enregistrement ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer "{recordingToDelete?.name}" ? Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
