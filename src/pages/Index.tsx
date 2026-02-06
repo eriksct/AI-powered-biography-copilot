@@ -3,7 +3,7 @@ import { Header } from "@/components/Header";
 import { RecordingsList } from "@/components/RecordingsList";
 import { TextEditor } from "@/components/TextEditor";
 import { AIAssistant } from "@/components/AIAssistant";
-import { Recording, Message } from "@/types/biography";
+import { Recording, Message, ChatThread } from "@/types/biography";
 
 const initialRecordings: Recording[] = [
   {
@@ -51,6 +51,51 @@ Dis-moi aussi qui est Madame Herveux (personnage réel ou fictif, époque, domai
   },
 ];
 
+const initialChats: ChatThread[] = [
+  {
+    id: "chat-1",
+    title: "Discussion actuelle",
+    updatedAt: "2026-02-06T10:15:00.000Z",
+    messages: initialMessages,
+  },
+  {
+    id: "chat-2",
+    title: "Plan de biographie",
+    updatedAt: "2026-02-01T18:40:00.000Z",
+    messages: [
+      {
+        id: "c2-1",
+        role: "user",
+        content: "Peux-tu proposer un plan en 5 chapitres ?",
+      },
+      {
+        id: "c2-2",
+        role: "assistant",
+        content:
+          "Bien sûr. Voici un plan structuré en 5 chapitres avec une introduction et une conclusion.",
+      },
+    ],
+  },
+  {
+    id: "chat-3",
+    title: "Style littéraire",
+    updatedAt: "2026-01-28T09:05:00.000Z",
+    messages: [
+      {
+        id: "c3-1",
+        role: "user",
+        content: "Réécris ce passage dans un style plus poétique.",
+      },
+      {
+        id: "c3-2",
+        role: "assistant",
+        content:
+          "Je propose une réécriture plus imagée, tout en conservant les faits historiques.",
+      },
+    ],
+  },
+];
+
 const initialContent = `Madame Herveux (1930 – 2024)
 
 Introduction
@@ -67,7 +112,11 @@ export default function Index() {
   const [recordings, setRecordings] = useState<Recording[]>(initialRecordings);
   const [selectedRecordingId, setSelectedRecordingId] = useState<string | null>("1");
   const [content, setContent] = useState(initialContent);
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [chats, setChats] = useState<ChatThread[]>(initialChats);
+  const [activeChatId, setActiveChatId] = useState<string>(initialChats[0]?.id ?? "");
+
+  const activeChat = chats.find((chat) => chat.id === activeChatId);
+  const messages = activeChat?.messages ?? [];
 
   const handleSelectRecording = (id: string) => {
     setSelectedRecordingId(id);
@@ -79,13 +128,44 @@ export default function Index() {
       setSelectedRecordingId(null);
     }
   };
+
+  const handleSelectChat = (chatId: string) => {
+    setActiveChatId(chatId);
+  };
+
+  const handleCreateChat = () => {
+    const newChatId = `chat-${Date.now()}`;
+    const newChat: ChatThread = {
+      id: newChatId,
+      title: `Nouveau chat ${chats.length + 1}`,
+      updatedAt: new Date().toISOString(),
+      messages: [],
+    };
+    setChats((prev) => [newChat, ...prev]);
+    setActiveChatId(newChatId);
+  };
+
   const handleSendMessage = (messageContent: string) => {
+    if (!activeChatId) {
+      return;
+    }
+    const targetChatId = activeChatId;
     const newMessage: Message = {
       id: Date.now().toString(),
       role: "user",
       content: messageContent,
     };
-    setMessages([...messages, newMessage]);
+    setChats((prev) =>
+      prev.map((chat) =>
+        chat.id === targetChatId
+          ? {
+              ...chat,
+              messages: [...chat.messages, newMessage],
+              updatedAt: new Date().toISOString(),
+            }
+          : chat
+      )
+    );
     
     // Simulate AI response
     setTimeout(() => {
@@ -94,7 +174,17 @@ export default function Index() {
         role: "assistant",
         content: "Je comprends. Je vais vous aider avec votre biographie. Pouvez-vous me donner plus de détails sur ce que vous souhaitez développer ?",
       };
-      setMessages((prev) => [...prev, aiResponse]);
+      setChats((prev) =>
+        prev.map((chat) =>
+          chat.id === targetChatId
+            ? {
+                ...chat,
+                messages: [...chat.messages, aiResponse],
+                updatedAt: new Date().toISOString(),
+              }
+            : chat
+        )
+      );
     }, 1000);
   };
 
@@ -120,7 +210,14 @@ export default function Index() {
 
         {/* Right panel - AI Assistant */}
         <div className="w-80 shrink-0">
-          <AIAssistant messages={messages} onSendMessage={handleSendMessage} />
+          <AIAssistant
+            chats={chats}
+            activeChatId={activeChatId}
+            messages={messages}
+            onSendMessage={handleSendMessage}
+            onSelectChat={handleSelectChat}
+            onCreateChat={handleCreateChat}
+          />
         </div>
       </div>
     </div>

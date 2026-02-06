@@ -1,15 +1,32 @@
 import { useState, useRef, useEffect } from "react";
-import { MessageSquare, Plus, Send, RotateCcw, Volume2, Copy, MoreHorizontal } from "lucide-react";
+import { MessageSquare, Plus, Send, RotateCcw, Volume2, Copy, MoreHorizontal, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Message } from "@/types/biography";
+import { Message, ChatThread } from "@/types/biography";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface AIAssistantProps {
+  chats: ChatThread[];
+  activeChatId: string;
   messages: Message[];
   onSendMessage: (content: string) => void;
+  onSelectChat: (chatId: string) => void;
+  onCreateChat: () => void;
 }
 
-export function AIAssistant({ messages, onSendMessage }: AIAssistantProps) {
+export function AIAssistant({
+  chats,
+  activeChatId,
+  messages,
+  onSendMessage,
+  onSelectChat,
+  onCreateChat,
+}: AIAssistantProps) {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -20,6 +37,17 @@ export function AIAssistant({ messages, onSendMessage }: AIAssistantProps) {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const formatUpdatedAt = (value: string) => {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return "";
+    }
+    return date.toLocaleDateString("fr-FR", {
+      day: "2-digit",
+      month: "short",
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,9 +65,43 @@ export function AIAssistant({ messages, onSendMessage }: AIAssistantProps) {
           <MessageSquare className="w-4 h-4" />
           <span>Assistant IA</span>
         </div>
-        <Button variant="ghost" size="icon" className="h-7 w-7">
-          <Plus className="w-4 h-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-7 w-7">
+                <History className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-72">
+              {chats.map((chat) => {
+                const lastMessage = chat.messages[chat.messages.length - 1];
+                return (
+                  <DropdownMenuItem
+                    key={chat.id}
+                    onSelect={() => onSelectChat(chat.id)}
+                    className={cn(
+                      "flex flex-col items-start gap-1 rounded-md px-3 py-2",
+                      chat.id === activeChatId && "bg-accent/50"
+                    )}
+                  >
+                    <div className="flex w-full items-center justify-between text-sm font-medium">
+                      <span className="truncate">{chat.title}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {formatUpdatedAt(chat.updatedAt)}
+                      </span>
+                    </div>
+                    <span className="text-xs text-muted-foreground max-h-8 overflow-hidden">
+                      {lastMessage?.content ?? "Aucun message pour le moment."}
+                    </span>
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onCreateChat}>
+            <Plus className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Messages */}

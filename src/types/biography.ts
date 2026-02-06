@@ -13,6 +13,13 @@ export interface Message {
   content: string;
 }
 
+export interface ChatThread {
+  id: string;
+  title: string;
+  updatedAt: string;
+  messages: Message[];
+}
+
 export interface Biography {
   id: string;
   title: string;
