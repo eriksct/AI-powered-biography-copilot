@@ -5,6 +5,7 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  base: mode === "production" ? "/AI-powered-biography-copilot/" : "/",
   server: {
     host: "::",
     port: 8080,
