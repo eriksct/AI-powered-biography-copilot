@@ -45,6 +45,26 @@ export function useCreateProject() {
   });
 }
 
+export function useUpdateProject() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: { projectId: string; title: string }) => {
+      const { data, error } = await supabase
+        .from('projects')
+        .update({ title: params.title, updated_at: new Date().toISOString() })
+        .eq('id', params.projectId)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as Project;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+}
+
 export function useDeleteProject() {
   const queryClient = useQueryClient();
 

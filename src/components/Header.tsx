@@ -26,9 +26,12 @@ export function Header({ biographyTitle, onSearchClick }: HeaderProps) {
   return (
     <header className="flex items-center justify-between px-4 py-2 border-b border-border bg-panel">
       <div className="flex items-center gap-3 text-sm">
-        <div className="flex items-center justify-center w-8 h-8 bg-primary/10 rounded-lg">
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="flex items-center justify-center w-8 h-8 bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors cursor-pointer"
+        >
           <BookOpen className="w-4 h-4 text-primary" />
-        </div>
+        </button>
         <nav className="flex items-center gap-2">
           <button
             onClick={() => navigate('/dashboard')}

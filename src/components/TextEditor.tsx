@@ -3,7 +3,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Underline from '@tiptap/extension-underline';
-import { FileText, Bold, Italic, Underline as UnderlineIcon, Download, Heading1, Heading2, Heading3, List, ListOrdered, Quote, Undo, Redo, Loader2 } from 'lucide-react';
+import { FileText, Bold, Italic, Underline as UnderlineIcon, Download, Heading1, Heading2, Heading3, List, ListOrdered, Undo, Redo, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useDocument, useSaveDocument } from '@/hooks/useDocument';
@@ -186,14 +186,6 @@ export function TextEditor({ projectId }: TextEditorProps) {
           onClick={() => editor?.chain().focus().toggleOrderedList().run()}
         >
           <ListOrdered className="w-4 h-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className={cn('h-8 w-8', editor?.isActive('blockquote') && 'bg-secondary')}
-          onClick={() => editor?.chain().focus().toggleBlockquote().run()}
-        >
-          <Quote className="w-4 h-4" />
         </Button>
 
         <div className="flex-1" />

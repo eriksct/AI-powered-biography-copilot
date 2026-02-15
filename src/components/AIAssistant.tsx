@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageSquare, Plus, Send, Copy, History, Loader2 } from 'lucide-react';
+import { MessageSquare, Plus, Send, Copy, History, Loader2, Paperclip, X, FileImage, FileText as FileIcon, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -20,6 +20,8 @@ interface AIAssistantProps {
 export function AIAssistant({ projectId, subjectName }: AIAssistantProps) {
   const [input, setInput] = useState('');
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { data: chats, isLoading: chatsLoading } = useChatThreads(projectId);
@@ -57,7 +59,7 @@ export function AIAssistant({ projectId, subjectName }: AIAssistantProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const content = input.trim();
-    if (!content) return;
+    if (!content && attachments.length === 0) return;
 
     // Auto-create a thread if none exists
     let threadId = activeChatId;
@@ -73,21 +75,46 @@ export function AIAssistant({ projectId, subjectName }: AIAssistantProps) {
     }
 
     setInput('');
+    const currentAttachments = [...attachments];
+    setAttachments([]); // Clear attachments immediately
+
     try {
       await sendMessage.mutateAsync({
         chatThreadId: threadId,
-        content,
+        content: content || '(pièces jointes)',
         projectId,
         subjectName: subjectName || undefined,
+        attachments: currentAttachments.length > 0 ? currentAttachments : undefined,
       });
     } catch {
       toast.error("Erreur lors de l'envoi du message");
+      // Restore attachments on error
+      setAttachments(currentAttachments);
     }
   };
 
   const handleCopy = async (content: string) => {
     await navigator.clipboard.writeText(content);
     toast.success('Copié !');
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setAttachments((prev) => [...prev, ...files]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const getFileIcon = (file: File) => {
+    if (file.type.startsWith('image/')) {
+      return <FileImage className="w-4 h-4" />;
+    }
+    return <FileIcon className="w-4 h-4" />;
   };
 
   return (
@@ -106,24 +133,35 @@ export function AIAssistant({ projectId, subjectName }: AIAssistantProps) {
                   <History className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-72">
-                {chats.map((chat) => (
-                  <DropdownMenuItem
-                    key={chat.id}
-                    onSelect={() => setActiveChatId(chat.id)}
-                    className={cn(
-                      'flex flex-col items-start gap-1 rounded-md px-3 py-2',
-                      chat.id === activeChatId && 'bg-accent/50'
-                    )}
-                  >
-                    <div className="flex w-full items-center justify-between text-sm font-medium">
-                      <span className="truncate">{chat.title}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {formatUpdatedAt(chat.updated_at)}
-                      </span>
-                    </div>
-                  </DropdownMenuItem>
-                ))}
+              <DropdownMenuContent align="end" className="w-80">
+                {chats.map((chat) => {
+                  // Créer un titre résumé basé sur le titre original
+                  const displayTitle = chat.title === 'Nouvelle discussion'
+                    ? 'Nouvelle discussion'
+                    : chat.title.length > 40
+                      ? chat.title.substring(0, 40) + '...'
+                      : chat.title;
+
+                  return (
+                    <DropdownMenuItem
+                      key={chat.id}
+                      onSelect={() => setActiveChatId(chat.id)}
+                      className={cn(
+                        'flex flex-col items-start gap-1 rounded-md px-3 py-2',
+                        chat.id === activeChatId && 'bg-accent/50'
+                      )}
+                    >
+                      <div className="flex w-full items-center justify-between text-sm font-medium">
+                        <span className="truncate max-w-[220px]" title={chat.title}>
+                          {displayTitle}
+                        </span>
+                        <span className="text-xs text-muted-foreground shrink-0 ml-2">
+                          {formatUpdatedAt(chat.updated_at)}
+                        </span>
+                      </div>
+                    </DropdownMenuItem>
+                  );
+                })}
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -174,13 +212,20 @@ export function AIAssistant({ projectId, subjectName }: AIAssistantProps) {
             </div>
           ))
         ) : (
-          <div className="text-center text-sm text-muted-foreground py-8">
-            Commencez une conversation avec l'assistant IA.
-            {subjectName && (
-              <p className="mt-1">
-                Sujet : <span className="font-medium">{subjectName}</span>
+          <div className="flex flex-col items-center justify-center py-16 px-6 space-y-4">
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10">
+              <Sparkles className="w-8 h-8 text-primary" />
+            </div>
+            <div className="text-center space-y-2">
+              <p className="text-lg font-medium text-foreground/80">
+                Qu'écrivons-nous aujourd'hui ?
               </p>
-            )}
+              {subjectName && (
+                <p className="text-sm text-muted-foreground">
+                  Sujet : <span className="font-medium text-foreground/60">{subjectName}</span>
+                </p>
+              )}
+            </div>
           </div>
         )}
 
@@ -200,8 +245,48 @@ export function AIAssistant({ projectId, subjectName }: AIAssistantProps) {
 
       {/* Input */}
       <div className="p-4 border-t border-border">
+        {/* Attachments preview */}
+        {attachments.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-3">
+            {attachments.map((file, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-2 bg-secondary rounded-lg px-3 py-2 text-sm"
+              >
+                {getFileIcon(file)}
+                <span className="max-w-[120px] truncate">{file.name}</span>
+                <button
+                  type="button"
+                  onClick={() => removeAttachment(index)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="relative">
           <div className="flex items-center gap-2 bg-secondary/50 rounded-xl px-4 py-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              accept="image/*,.pdf,.doc,.docx,.txt"
+              multiple
+              className="hidden"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-primary shrink-0"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={sendMessage.isPending}
+            >
+              <Paperclip className="w-4 h-4" />
+            </Button>
             <input
               type="text"
               value={input}
@@ -215,7 +300,7 @@ export function AIAssistant({ projectId, subjectName }: AIAssistantProps) {
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-muted-foreground hover:text-primary shrink-0"
-              disabled={!input.trim() || sendMessage.isPending}
+              disabled={(!input.trim() && attachments.length === 0) || sendMessage.isPending}
             >
               <Send className="w-4 h-4" />
             </Button>

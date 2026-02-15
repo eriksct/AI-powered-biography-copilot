@@ -27,14 +27,47 @@ export function useSendMessage() {
       content: string;
       projectId: string;
       subjectName?: string;
+      attachments?: File[];
     }) => {
+      let messageContent = params.content;
+
+      // Upload attachments if present
+      if (params.attachments && params.attachments.length > 0) {
+        const attachmentUrls: string[] = [];
+
+        for (const file of params.attachments) {
+          const fileName = `${Date.now()}_${file.name}`;
+          const filePath = `${params.chatThreadId}/${fileName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('chat-attachments')
+            .upload(filePath, file);
+
+          if (uploadError) {
+            console.error('Upload error:', uploadError);
+            continue;
+          }
+
+          const { data: urlData } = supabase.storage
+            .from('chat-attachments')
+            .getPublicUrl(filePath);
+
+          attachmentUrls.push(urlData.publicUrl);
+        }
+
+        // Add attachment info to message content
+        if (attachmentUrls.length > 0) {
+          messageContent += '\n\n[Pièces jointes: ' + params.attachments.map(f => f.name).join(', ') + ']';
+        }
+      }
+
       // Insert user message
       const { error: userError } = await supabase
         .from('messages')
         .insert({
           chat_thread_id: params.chatThreadId,
           role: 'user' as const,
-          content: params.content,
+          content: messageContent,
         });
       if (userError) throw userError;
 
@@ -72,6 +105,30 @@ export function useSendMessage() {
           content: aiData.content,
         });
       if (insertError) throw insertError;
+
+      // Auto-generate title after 2 messages if still default title
+      const messageCount = (history?.length || 0) + 2; // +2 for user and assistant messages just added
+      if (messageCount === 2) {
+        // Get the thread to check current title
+        const { data: thread } = await supabase
+          .from('chat_threads')
+          .select('title')
+          .eq('id', params.chatThreadId)
+          .single();
+
+        if (thread?.title === 'Nouvelle discussion') {
+          // Generate a title from the first user message
+          const firstUserMessage = params.content.substring(0, 50).trim();
+          const title = firstUserMessage.length >= 50
+            ? firstUserMessage.substring(0, 47) + '...'
+            : firstUserMessage;
+
+          await supabase
+            .from('chat_threads')
+            .update({ title })
+            .eq('id', params.chatThreadId);
+        }
+      }
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['messages', variables.chatThreadId] });

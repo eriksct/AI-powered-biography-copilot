@@ -42,9 +42,9 @@ function TranscriptionBadge({ status }: { status: string }) {
   switch (status) {
     case 'processing':
       return (
-        <span className="inline-flex items-center gap-1 text-[10px] text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400 px-1.5 py-0.5 rounded-full">
-          <Loader2 className="w-2.5 h-2.5 animate-spin" />
-          Transcription...
+        <span className="inline-flex items-center gap-2 text-sm font-semibold text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400 px-3 py-1.5 rounded-full shadow-sm">
+          <Loader2 className="w-4 h-4 animate-spin" />
+          Transcription en cours
         </span>
       );
     case 'completed':
