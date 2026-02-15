@@ -181,14 +181,8 @@ export default function Dashboard() {
     });
   };
 
-  const greeting = (() => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Bonjour';
-    if (hour < 18) return 'Bon après-midi';
-    return 'Bonsoir';
-  })();
-
   const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || '';
+  const firstName = (user?.user_metadata?.full_name || user?.email?.split('@')[0] || '').split(/\s+/)[0];
 
   const projectCount = projects?.length ?? 0;
 
@@ -207,7 +201,7 @@ export default function Dashboard() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="gap-2">
                 <User className="w-4 h-4" />
-                <span className="text-sm">{user?.email}</span>
+                <span className="text-sm">{displayName}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -232,7 +226,7 @@ export default function Dashboard() {
           <div className="flex items-end justify-between gap-4">
             <div className="space-y-1.5">
               <h2 className="text-3xl font-bold text-foreground tracking-tight">
-                {greeting}, {displayName}
+                Bonjour {firstName}, qu'écrivons-nous aujourd'hui ?
               </h2>
               <p className="text-muted-foreground text-base">
                 {projectCount === 0
