@@ -305,10 +305,8 @@ export default function Dashboard() {
               const stats = statsMap?.[project.id];
               const recordingCount = stats?.recording_count ?? 0;
               const wordCount = stats?.word_count ?? 0;
-              // Progress heuristic: recording = 40%, writing = 60%
-              const hasRecordings = recordingCount > 0;
-              const hasWritten = wordCount > 100;
-              const progressValue = (hasRecordings ? 40 : 0) + (hasWritten ? Math.min(60, Math.floor((wordCount / 2000) * 60)) : 0);
+              // Progress: based on word count toward a 2000-word target
+              const progressValue = Math.min(100, Math.floor((wordCount / 2000) * 100));
 
               return (
                 <div
@@ -389,10 +387,10 @@ export default function Dashboard() {
                     {/* Progress bar */}
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] text-muted-foreground font-medium">Progression</span>
-                        <span className="text-[11px] text-muted-foreground">{Math.min(progressValue, 100)}%</span>
+                        <span className="text-[11px] text-muted-foreground font-medium">Rédaction</span>
+                        <span className="text-[11px] text-muted-foreground">{wordCount.toLocaleString('fr-FR')} mots</span>
                       </div>
-                      <Progress value={Math.min(progressValue, 100)} className="h-1.5" />
+                      <Progress value={progressValue} className="h-1.5" />
                     </div>
 
                     {/* Date */}
