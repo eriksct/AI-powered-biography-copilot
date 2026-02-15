@@ -25,6 +25,14 @@ export function TextEditor({ projectId }: TextEditorProps) {
         history: {
           depth: 100,
         },
+        bulletList: {
+          keepMarks: true,
+          keepAttributes: false,
+        },
+        orderedList: {
+          keepMarks: true,
+          keepAttributes: false,
+        },
       }),
       Placeholder.configure({
         placeholder: 'Commencez à écrire votre biographie...',
@@ -97,6 +105,7 @@ export function TextEditor({ projectId }: TextEditorProps) {
           variant="ghost"
           size="icon"
           className="h-8 w-8"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => editor?.chain().focus().undo().run()}
           disabled={!editor?.can().undo()}
         >
@@ -106,8 +115,9 @@ export function TextEditor({ projectId }: TextEditorProps) {
           variant="ghost"
           size="icon"
           className="h-8 w-8"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => editor?.chain().focus().redo().run()}
-          disabled={!editor?.can().redo()}
+          disabled={!editor?.can().undo()}
         >
           <Redo className="w-4 h-4" />
         </Button>
@@ -119,6 +129,7 @@ export function TextEditor({ projectId }: TextEditorProps) {
           variant="ghost"
           size="icon"
           className={cn('h-8 w-8', editor?.isActive('bold') && 'bg-secondary')}
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => editor?.chain().focus().toggleBold().run()}
         >
           <Bold className="w-4 h-4" />
@@ -127,6 +138,7 @@ export function TextEditor({ projectId }: TextEditorProps) {
           variant="ghost"
           size="icon"
           className={cn('h-8 w-8', editor?.isActive('italic') && 'bg-secondary')}
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => editor?.chain().focus().toggleItalic().run()}
         >
           <Italic className="w-4 h-4" />
@@ -135,6 +147,7 @@ export function TextEditor({ projectId }: TextEditorProps) {
           variant="ghost"
           size="icon"
           className={cn('h-8 w-8', editor?.isActive('underline') && 'bg-secondary')}
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => editor?.chain().focus().toggleUnderline().run()}
         >
           <UnderlineIcon className="w-4 h-4" />
@@ -147,6 +160,7 @@ export function TextEditor({ projectId }: TextEditorProps) {
           variant="ghost"
           size="icon"
           className={cn('h-8 w-8', editor?.isActive('heading', { level: 1 }) && 'bg-secondary')}
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => editor?.chain().focus().toggleHeading({ level: 1 }).run()}
         >
           <Heading1 className="w-4 h-4" />
@@ -155,6 +169,7 @@ export function TextEditor({ projectId }: TextEditorProps) {
           variant="ghost"
           size="icon"
           className={cn('h-8 w-8', editor?.isActive('heading', { level: 2 }) && 'bg-secondary')}
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
         >
           <Heading2 className="w-4 h-4" />
@@ -163,6 +178,7 @@ export function TextEditor({ projectId }: TextEditorProps) {
           variant="ghost"
           size="icon"
           className={cn('h-8 w-8', editor?.isActive('heading', { level: 3 }) && 'bg-secondary')}
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}
         >
           <Heading3 className="w-4 h-4" />
@@ -175,6 +191,7 @@ export function TextEditor({ projectId }: TextEditorProps) {
           variant="ghost"
           size="icon"
           className={cn('h-8 w-8', editor?.isActive('bulletList') && 'bg-secondary')}
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => editor?.chain().focus().toggleBulletList().run()}
         >
           <List className="w-4 h-4" />
@@ -183,6 +200,7 @@ export function TextEditor({ projectId }: TextEditorProps) {
           variant="ghost"
           size="icon"
           className={cn('h-8 w-8', editor?.isActive('orderedList') && 'bg-secondary')}
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => editor?.chain().focus().toggleOrderedList().run()}
         >
           <ListOrdered className="w-4 h-4" />
