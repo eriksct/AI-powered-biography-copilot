@@ -25,6 +25,7 @@ const reasonMessages = {
 
 const proFeatures = [
   'Biographies illimitées',
+  'Enregistrements illimités',
   'Assistant IA illimité',
   'Export professionnel (DOCX, PDF)',
   'Support email prioritaire',
