@@ -94,7 +94,7 @@ export function TextEditor({ projectId }: TextEditorProps) {
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Toolbar */}
-      <div className="flex items-center gap-1 px-4 py-3 border-b border-border bg-panel">
+      <div className="flex items-center gap-1 px-4 h-12 shrink-0 border-b border-border bg-panel">
         <div className="flex items-center gap-1 text-sm font-medium text-foreground mr-3">
           <FileText className="w-4 h-4" />
           <span>Texte</span>

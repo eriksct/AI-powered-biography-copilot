@@ -325,8 +325,8 @@ export function RecordingsList({ projectId, selectedRecordingId, onSelectRecordi
     )}>
       {/* Header */}
       <div className={cn(
-        "flex items-center justify-between px-4 py-3 border-b border-border",
-        fullScreen && "px-5 py-4"
+        "flex items-center justify-between px-4 h-12 shrink-0 border-b border-border",
+        fullScreen && "px-5 h-14"
       )}>
         <div className={cn(
           "flex items-center gap-2 text-sm font-medium text-foreground",
