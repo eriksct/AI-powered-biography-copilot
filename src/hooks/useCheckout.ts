@@ -4,10 +4,19 @@ import { supabase } from '@/lib/supabase';
 export function useCheckout() {
   return useMutation({
     mutationFn: async (priceId: string) => {
+      console.log('[useCheckout] Invoking with priceId:', priceId);
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: { priceId },
       });
-      if (error) throw error;
+      console.log('[useCheckout] Response data:', data, 'error:', error);
+      if (error) {
+        console.error('[useCheckout] Function error:', error);
+        throw error;
+      }
+      if (data?.error) {
+        console.error('[useCheckout] Server error:', data.error);
+        throw new Error(data.error);
+      }
       if (data?.url) {
         window.location.href = data.url;
       } else {
