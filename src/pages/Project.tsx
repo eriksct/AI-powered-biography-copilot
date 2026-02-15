@@ -90,9 +90,9 @@ export default function Project() {
         onSearchClick={() => setSearchOpen(true)}
       />
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 min-h-0">
         {/* Left panel - Recordings */}
-        <div className="w-64 shrink-0 h-full">
+        <div className="w-64 shrink-0 overflow-hidden">
           <RecordingsList
             projectId={project.id}
             selectedRecordingId={selectedRecordingId}
@@ -101,12 +101,12 @@ export default function Project() {
         </div>
 
         {/* Center panel - Text Editor */}
-        <div className="flex-1 min-w-0 h-full">
+        <div className="flex-1 min-w-0 overflow-hidden">
           <TextEditor projectId={project.id} />
         </div>
 
         {/* Right panel - AI Assistant */}
-        <div className="w-80 shrink-0 h-full">
+        <div className="w-80 shrink-0 overflow-hidden">
           <AIAssistant
             projectId={project.id}
             subjectName={project.subject_name}
