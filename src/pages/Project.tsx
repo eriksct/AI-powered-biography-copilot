@@ -8,10 +8,12 @@ import { TextEditor } from '@/components/TextEditor';
 import { AIAssistant } from '@/components/AIAssistant';
 import { SearchDialog } from '@/components/SearchDialog';
 import { Project as ProjectType } from '@/types/biography';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function Project() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [selectedRecordingId, setSelectedRecordingId] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -59,6 +61,24 @@ export default function Project() {
         >
           Retour au tableau de bord
         </button>
+      </div>
+    );
+  }
+
+  if (isMobile) {
+    return (
+      <div className="flex flex-col h-screen bg-background">
+        <Header
+          biographyTitle={project.title}
+        />
+        <div className="flex-1 overflow-hidden">
+          <RecordingsList
+            projectId={project.id}
+            selectedRecordingId={selectedRecordingId}
+            onSelectRecording={setSelectedRecordingId}
+            fullScreen
+          />
+        </div>
       </div>
     );
   }
