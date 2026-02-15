@@ -82,7 +82,7 @@ export default function Settings() {
             </Button>
             <div className="flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-primary" />
-              <h1 className="text-lg font-semibold text-foreground">Reglages</h1>
+              <h1 className="text-lg font-semibold text-foreground">Réglages</h1>
             </div>
           </div>
           <DropdownMenu>
@@ -99,7 +99,7 @@ export default function Settings() {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleSignOut}>
                 <LogOut className="w-4 h-4 mr-2" />
-                Se deconnecter
+                Se déconnecter
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -128,7 +128,7 @@ export default function Settings() {
                     <span className="text-xs text-amber-600">Paiement en retard</span>
                   )}
                   {profile?.subscription_status === 'canceled' && (
-                    <span className="text-xs text-muted-foreground">Annule</span>
+                    <span className="text-xs text-muted-foreground">Annulé</span>
                   )}
                 </div>
               </div>
@@ -145,12 +145,12 @@ export default function Settings() {
                 ) : (
                   <ExternalLink className="w-4 h-4" />
                 )}
-                Gerer mon abonnement
+                Gérer mon abonnement
               </Button>
             ) : (
               <Button onClick={() => setUpgradeDialogOpen(true)} className="gap-2">
                 <Crown className="w-4 h-4" />
-                Passer a Pro
+                Passer à Pro
               </Button>
             )}
           </div>
@@ -158,13 +158,13 @@ export default function Settings() {
           {/* Plan details */}
           {isPro ? (
             <div className="text-sm text-muted-foreground space-y-1">
-              <p>Projets illimites, 15h de transcription/mois, assistant IA illimite</p>
+              <p>Projets illimités, 15h de transcription/mois, assistant IA illimité</p>
               <p>Export professionnel DOCX/PDF, support prioritaire</p>
             </div>
           ) : (
             <div className="text-sm text-muted-foreground space-y-1">
-              <p>1 projet actif, 2h de transcription, fonctionnalites de base</p>
-              <p>Passez a Pro pour debloquer toutes les fonctionnalites.</p>
+              <p>1 projet actif, 2h de transcription, fonctionnalités de base</p>
+              <p>Passez à Pro pour débloquer toutes les fonctionnalités.</p>
             </div>
           )}
         </section>
@@ -181,7 +181,7 @@ export default function Settings() {
                 <span className="text-foreground">Projets</span>
               </div>
               <span className="text-muted-foreground">
-                {projectCount} / {isPro ? 'illimite' : maxProjects}
+                {projectCount} / {isPro ? 'illimité' : maxProjects}
               </span>
             </div>
             {!isPro && (

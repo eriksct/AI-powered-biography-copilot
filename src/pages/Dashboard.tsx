@@ -61,12 +61,12 @@ export default function Dashboard() {
   useEffect(() => {
     const checkoutStatus = searchParams.get('checkout');
     if (checkoutStatus === 'success') {
-      toast.success('Abonnement active ! Bienvenue dans Biograph Pro.');
+      toast.success('Abonnement activé ! Bienvenue dans Biograph Pro.');
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       searchParams.delete('checkout');
       setSearchParams(searchParams, { replace: true });
     } else if (checkoutStatus === 'cancel') {
-      toast.info('Paiement annule.');
+      toast.info('Paiement annulé.');
       searchParams.delete('checkout');
       setSearchParams(searchParams, { replace: true });
     }
@@ -157,12 +157,12 @@ export default function Dashboard() {
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => navigate('/settings')}>
                 <Settings className="w-4 h-4 mr-2" />
-                Reglages
+                Réglages
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleSignOut}>
                 <LogOut className="w-4 h-4 mr-2" />
-                Se deconnecter
+                Se déconnecter
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -359,8 +359,8 @@ export default function Dashboard() {
           <AlertDialogHeader>
             <AlertDialogTitle>Supprimer le projet ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Etes-vous sur de vouloir supprimer "{deleteTarget?.title}" ? Tous les enregistrements
-              et textes associes seront perdus. Cette action est irreversible.
+              Êtes-vous sûr de vouloir supprimer « {deleteTarget?.title} » ? Tous les enregistrements
+              et textes associés seront perdus. Cette action est irréversible.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

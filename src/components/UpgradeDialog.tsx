@@ -20,13 +20,13 @@ interface UpgradeDialogProps {
 
 const reasonMessages = {
   projects: 'Vous avez atteint la limite de 1 projet sur le plan Gratuit.',
-  transcription: 'Vous avez utilise vos 2 heures de transcription du plan Gratuit.',
+  transcription: 'Vous avez utilisé vos 2 heures de transcription du plan Gratuit.',
 };
 
 const proFeatures = [
-  'Projets illimites',
+  'Projets illimités',
   '15 heures de transcription par mois',
-  'Assistant IA illimite',
+  'Assistant IA illimité',
   'Export professionnel (DOCX, PDF)',
   'Support email prioritaire',
   'Historique complet (30 jours)',
@@ -38,7 +38,7 @@ export default function UpgradeDialog({ open, onOpenChange, reason }: UpgradeDia
 
   const handleUpgrade = async (priceId: string) => {
     if (!priceId) {
-      toast.error('Les prix Stripe ne sont pas encore configures.');
+      toast.error('Les prix Stripe ne sont pas encore configurés.');
       return;
     }
     setLoadingPrice(priceId);
@@ -56,10 +56,10 @@ export default function UpgradeDialog({ open, onOpenChange, reason }: UpgradeDia
         <DialogHeader>
           <div className="flex items-center gap-2 mb-1">
             <Crown className="w-5 h-5 text-amber-500" />
-            <DialogTitle>Passez a Professionnel</DialogTitle>
+            <DialogTitle>Passez à Professionnel</DialogTitle>
           </div>
           <DialogDescription>
-            {reason ? reasonMessages[reason] : 'Debloquez toutes les fonctionnalites pour vos projets de biographie.'}
+            {reason ? reasonMessages[reason] : 'Débloquez toutes les fonctionnalités pour vos projets de biographie.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -84,14 +84,14 @@ export default function UpgradeDialog({ open, onOpenChange, reason }: UpgradeDia
               ) : (
                 <>
                   <span className="text-lg font-bold">69 EUR / mois</span>
-                  <span className="text-xs opacity-80">Sans engagement, annulable a tout moment</span>
+                  <span className="text-xs opacity-80">Sans engagement, annulable à tout moment</span>
                 </>
               )}
             </Button>
           </div>
 
           <p className="text-xs text-center text-muted-foreground pt-2">
-            Paiement securise via Stripe. Annulable a tout moment.
+            Paiement sécurisé via Stripe. Annulable à tout moment.
           </p>
         </div>
       </DialogContent>

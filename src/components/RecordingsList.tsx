@@ -468,7 +468,7 @@ export function RecordingsList({ projectId, selectedRecordingId, onSelectRecordi
           <AlertDialogHeader>
             <AlertDialogTitle>Supprimer l'enregistrement ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Etes-vous sur de vouloir supprimer "{recordingToDelete?.name}" ? Cette action est irreversible.
+              Êtes-vous sûr de vouloir supprimer « {recordingToDelete?.name} » ? Cette action est irréversible.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
