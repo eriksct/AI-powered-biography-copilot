@@ -287,13 +287,12 @@ export default function Landing() {
                 <p className="text-sm text-muted-foreground mt-1">Pour les biographes professionnels</p>
               </div>
               <div className="mb-6">
-                <span className="text-4xl font-bold text-foreground">69 EUR</span>
+                <span className="text-4xl font-bold text-foreground">69€</span>
                 <span className="text-muted-foreground ml-1">/ mois</span>
                 <p className="text-xs text-muted-foreground mt-1">Sans engagement, annulable à tout moment</p>
               </div>
               <ul className="space-y-3 mb-8 flex-1">
-                <PricingFeature highlight>Projets illimités</PricingFeature>
-                <PricingFeature highlight>15 heures de transcription par mois</PricingFeature>
+                <PricingFeature highlight>Biographies illimitées</PricingFeature>
                 <PricingFeature highlight>Assistant IA illimité</PricingFeature>
                 <PricingFeature>Toutes les fonctionnalités</PricingFeature>
                 <PricingFeature>Export professionnel DOCX et PDF</PricingFeature>

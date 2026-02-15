@@ -24,8 +24,7 @@ const reasonMessages = {
 };
 
 const proFeatures = [
-  'Projets illimités',
-  '15 heures de transcription par mois',
+  'Biographies illimitées',
   'Assistant IA illimité',
   'Export professionnel (DOCX, PDF)',
   'Support email prioritaire',
@@ -56,7 +55,7 @@ export default function UpgradeDialog({ open, onOpenChange, reason }: UpgradeDia
         <DialogHeader>
           <div className="flex items-center gap-2 mb-1">
             <Crown className="w-5 h-5 text-amber-500" />
-            <DialogTitle>Passez à Professionnel</DialogTitle>
+            <DialogTitle>Passez à Biograph Professionnel</DialogTitle>
           </div>
           <DialogDescription>
             {reason ? reasonMessages[reason] : 'Débloquez toutes les fonctionnalités pour vos projets de biographie.'}
@@ -83,7 +82,7 @@ export default function UpgradeDialog({ open, onOpenChange, reason }: UpgradeDia
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <>
-                  <span className="text-lg font-bold">69 EUR / mois</span>
+                  <span className="text-lg font-bold">69€ / mois</span>
                   <span className="text-xs opacity-80">Sans engagement, annulable à tout moment</span>
                 </>
               )}
@@ -91,7 +90,7 @@ export default function UpgradeDialog({ open, onOpenChange, reason }: UpgradeDia
           </div>
 
           <p className="text-xs text-center text-muted-foreground pt-2">
-            Paiement sécurisé via Stripe. Annulable à tout moment.
+            Paiement sécurisé
           </p>
         </div>
       </DialogContent>

@@ -158,7 +158,7 @@ export default function Settings() {
           {/* Plan details */}
           {isPro ? (
             <div className="text-sm text-muted-foreground space-y-1">
-              <p>Projets illimités, 15h de transcription/mois, assistant IA illimité</p>
+              <p>Biographies illimitées, assistant IA illimité</p>
               <p>Export professionnel DOCX/PDF, support prioritaire</p>
             </div>
           ) : (
