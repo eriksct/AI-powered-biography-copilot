@@ -379,7 +379,7 @@ export default function Landing() {
             <span className="text-sm font-medium text-foreground">Biograph</span>
           </div>
           <div className="text-center sm:text-right text-sm text-muted-foreground">
-            <p>Erik Schjøth — erik.schjoth@gmail.com</p>
+            <p>Erik Schjøth</p>
             <p className="mt-1">Basé en France</p>
           </div>
         </div>
