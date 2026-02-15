@@ -1,11 +1,27 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.95.3';
-import Stripe from 'https://esm.sh/stripe@14.14.0?target=deno';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Helper: call Stripe REST API with fetch
+async function stripePost(endpoint: string, params: Record<string, string>, stripeKey: string) {
+  const res = await fetch(`https://api.stripe.com/v1${endpoint}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${stripeKey}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams(params).toString(),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || `Stripe error ${res.status}`);
+  }
+  return data;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -15,8 +31,6 @@ serve(async (req) => {
   try {
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
     if (!stripeKey) throw new Error('STRIPE_SECRET_KEY not configured');
-
-    const stripe = new Stripe(stripeKey, { apiVersion: '2023-10-16' });
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -58,11 +72,12 @@ serve(async (req) => {
     console.log('Existing customerId:', customerId);
 
     if (!customerId) {
-      console.log('Creating Stripe customer for:', profile.email || user.email);
-      const customer = await stripe.customers.create({
-        email: profile.email || user.email,
-        metadata: { supabase_user_id: user.id },
-      });
+      const email = profile.email || user.email || '';
+      console.log('Creating Stripe customer for:', email);
+      const customer = await stripePost('/customers', {
+        email,
+        'metadata[supabase_user_id]': user.id,
+      }, stripeKey);
       customerId = customer.id;
       console.log('Created customer:', customerId);
 
@@ -77,17 +92,16 @@ serve(async (req) => {
 
     console.log('Creating checkout session with price:', priceId, 'customer:', customerId, 'origin:', origin);
 
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      line_items: [{ price: priceId, quantity: 1 }],
+    const session = await stripePost('/checkout/sessions', {
+      customer: customerId!,
+      'line_items[0][price]': priceId,
+      'line_items[0][quantity]': '1',
       mode: 'subscription',
       success_url: `${origin}/dashboard?checkout=success`,
       cancel_url: `${origin}/dashboard?checkout=cancel`,
-      metadata: { supabase_user_id: user.id },
-      subscription_data: {
-        metadata: { supabase_user_id: user.id },
-      },
-    });
+      'metadata[supabase_user_id]': user.id,
+      'subscription_data[metadata][supabase_user_id]': user.id,
+    }, stripeKey);
 
     console.log('Session created, URL:', session.url);
 
@@ -98,7 +112,6 @@ serve(async (req) => {
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     console.error('Checkout session error:', msg);
-    // Return 200 so supabase.functions.invoke puts the response in `data` (not `error`)
     return new Response(
       JSON.stringify({ error: msg }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
