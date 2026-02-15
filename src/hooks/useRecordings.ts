@@ -44,6 +44,7 @@ export function useCreateRecording() {
       if (uploadError) throw uploadError;
 
       // Create recording record
+      // The database trigger will automatically start transcription
       const { data, error } = await supabase
         .from('recordings')
         .insert({
@@ -58,13 +59,6 @@ export function useCreateRecording() {
         .select()
         .single();
       if (error) throw error;
-
-      // Trigger transcription (non-blocking)
-      supabase.functions.invoke('transcribe', {
-        body: { recordingId: data.id },
-      }).catch(() => {
-        console.warn('Transcription trigger failed, will need manual retry');
-      });
 
       return data as Recording;
     },

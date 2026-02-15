@@ -258,3 +258,48 @@ CREATE POLICY "Users can delete own chat attachments" ON storage.objects
     bucket_id = 'chat-attachments' AND
     auth.role() = 'authenticated'
   );
+
+-- ============================================================
+-- AUTO-TRANSCRIPTION TRIGGER
+-- ============================================================
+-- This trigger automatically calls the transcribe Edge Function
+-- when a new recording is uploaded, enabling async transcription
+-- even if the user closes their browser/computer
+
+-- Enable the pg_net extension for HTTP requests
+CREATE EXTENSION IF NOT EXISTS pg_net;
+
+-- Function to trigger transcription via Edge Function
+CREATE OR REPLACE FUNCTION trigger_auto_transcription()
+RETURNS TRIGGER AS $$
+DECLARE
+  function_url TEXT;
+  service_role_key TEXT;
+BEGIN
+  -- Get Supabase project URL from current request context
+  -- The Edge Function URL will be: https://[PROJECT_REF].supabase.co/functions/v1/transcribe
+  function_url := current_setting('app.settings.supabase_url', true) || '/functions/v1/transcribe';
+  service_role_key := current_setting('app.settings.service_role_key', true);
+
+  -- Call the transcribe Edge Function asynchronously using pg_net
+  PERFORM net.http_post(
+    url := function_url,
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'Authorization', 'Bearer ' || service_role_key
+    ),
+    body := jsonb_build_object(
+      'recordingId', NEW.id
+    )
+  );
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger: Auto-start transcription when recording is inserted with 'pending' status
+CREATE TRIGGER auto_transcribe_on_upload
+  AFTER INSERT ON recordings
+  FOR EACH ROW
+  WHEN (NEW.transcription_status = 'pending')
+  EXECUTE FUNCTION trigger_auto_transcription();
