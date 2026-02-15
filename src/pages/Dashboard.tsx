@@ -187,7 +187,7 @@ export default function Dashboard() {
   const projectCount = projects?.length ?? 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/[0.03]">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/[0.08]">
       {/* Header */}
       <header className="border-b border-border/60 bg-panel/80 backdrop-blur-sm sticky top-0 z-20">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
