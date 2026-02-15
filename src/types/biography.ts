@@ -2,6 +2,13 @@ export interface Profile {
   id: string;
   email: string;
   full_name?: string;
+  plan: 'free' | 'pro';
+  stripe_customer_id?: string;
+  subscription_id?: string;
+  subscription_status: 'none' | 'active' | 'past_due' | 'canceled' | 'incomplete' | 'trialing';
+  transcription_seconds_used: number;
+  max_projects: number;
+  max_transcription_seconds: number;
   created_at: string;
   updated_at: string;
 }

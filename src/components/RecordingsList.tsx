@@ -25,6 +25,8 @@ import { toast } from 'sonner';
 import { useRecordings, useCreateRecording, useDeleteRecording, useRecordingAudioUrl } from '@/hooks/useRecordings';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { useTranscript } from '@/hooks/useTranscript';
+import { useSubscription } from '@/hooks/useSubscription';
+import UpgradeDialog from '@/components/UpgradeDialog';
 
 interface RecordingsListProps {
   projectId: string;
@@ -219,6 +221,7 @@ export function RecordingsList({ projectId, selectedRecordingId, onSelectRecordi
   const createRecording = useCreateRecording();
   const deleteRecording = useDeleteRecording();
   const recorder = useAudioRecorder();
+  const { canTranscribe } = useSubscription();
 
   const [transcriptOpen, setTranscriptOpen] = useState(false);
   const [transcriptRecording, setTranscriptRecording] = useState<Recording | null>(null);
@@ -228,8 +231,13 @@ export function RecordingsList({ projectId, selectedRecordingId, onSelectRecordi
   const [recordingName, setRecordingName] = useState('');
   const [pendingBlob, setPendingBlob] = useState<Blob | null>(null);
   const [pendingDuration, setPendingDuration] = useState(0);
+  const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
 
   const handleStartRecording = async () => {
+    if (!canTranscribe) {
+      setUpgradeDialogOpen(true);
+      return;
+    }
     await recorder.startRecording();
   };
 
@@ -460,7 +468,7 @@ export function RecordingsList({ projectId, selectedRecordingId, onSelectRecordi
           <AlertDialogHeader>
             <AlertDialogTitle>Supprimer l'enregistrement ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer "{recordingToDelete?.name}" ? Cette action est irréversible.
+              Etes-vous sur de vouloir supprimer "{recordingToDelete?.name}" ? Cette action est irreversible.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -471,6 +479,13 @@ export function RecordingsList({ projectId, selectedRecordingId, onSelectRecordi
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Upgrade Dialog */}
+      <UpgradeDialog
+        open={upgradeDialogOpen}
+        onOpenChange={setUpgradeDialogOpen}
+        reason="transcription"
+      />
     </div>
   );
 }

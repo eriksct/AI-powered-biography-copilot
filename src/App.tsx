@@ -8,6 +8,8 @@ import { supabaseConfigured } from "@/lib/supabase";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Project from "./pages/Project";
+import Settings from "./pages/Settings";
+import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -104,7 +106,7 @@ const App = () => {
           <Sonner />
           <BrowserRouter basename={import.meta.env.BASE_URL}>
             <Routes>
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/" element={<Landing />} />
               <Route
                 path="/auth"
                 element={
@@ -118,6 +120,14 @@ const App = () => {
                 element={
                   <ProtectedRoute>
                     <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute>
+                    <Settings />
                   </ProtectedRoute>
                 }
               />

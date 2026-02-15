@@ -1,11 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { BookOpen, Search, User, LogOut, ChevronRight } from 'lucide-react';
+import { BookOpen, Search, User, LogOut, ChevronRight, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
@@ -68,9 +69,14 @@ export function Header({ biographyTitle, onSearchClick }: HeaderProps) {
             <DropdownMenuItem disabled className="text-xs text-muted-foreground">
               {user?.email}
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate('/settings')}>
+              <Settings className="w-4 h-4 mr-2" />
+              Reglages
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={handleSignOut}>
               <LogOut className="w-4 h-4 mr-2" />
-              Se déconnecter
+              Se deconnecter
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

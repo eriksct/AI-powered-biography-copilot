@@ -1,7 +1,9 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProjects, useCreateProject, useUpdateProject, useDeleteProject } from '@/hooks/useProjects';
+import { useSubscription } from '@/hooks/useSubscription';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,7 +13,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -28,20 +29,26 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { BookOpen, Plus, MoreVertical, Trash2, User, LogOut, Edit2, Calendar, FileText } from 'lucide-react';
+import { BookOpen, Plus, MoreVertical, Trash2, User, LogOut, Edit2, Calendar, FileText, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import { Project } from '@/types/biography';
+import UpgradeDialog from '@/components/UpgradeDialog';
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryClient = useQueryClient();
   const { user, signOut } = useAuth();
   const { data: projects, isLoading } = useProjects();
+  const { canCreateProject } = useSubscription();
   const createProject = useCreateProject();
   const updateProject = useUpdateProject();
   const deleteProject = useDeleteProject();
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [subjectName, setSubjectName] = useState('');
   const [description, setDescription] = useState('');
@@ -49,6 +56,29 @@ export default function Dashboard() {
   const [editTarget, setEditTarget] = useState<Project | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editTitle, setEditTitle] = useState('');
+
+  // Handle checkout success/cancel query params
+  useEffect(() => {
+    const checkoutStatus = searchParams.get('checkout');
+    if (checkoutStatus === 'success') {
+      toast.success('Abonnement active ! Bienvenue dans Biograph Pro.');
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      searchParams.delete('checkout');
+      setSearchParams(searchParams, { replace: true });
+    } else if (checkoutStatus === 'cancel') {
+      toast.info('Paiement annule.');
+      searchParams.delete('checkout');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, []);
+
+  const handleNewProjectClick = () => {
+    if (canCreateProject) {
+      setDialogOpen(true);
+    } else {
+      setUpgradeDialogOpen(true);
+    }
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,9 +155,14 @@ export default function Dashboard() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => navigate('/settings')}>
+                <Settings className="w-4 h-4 mr-2" />
+                Reglages
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleSignOut}>
                 <LogOut className="w-4 h-4 mr-2" />
-                Se déconnecter
+                Se deconnecter
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -138,13 +173,11 @@ export default function Dashboard() {
       <main className="max-w-6xl mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-semibold text-foreground">Mes biographies</h2>
+          <Button className="gap-2" onClick={handleNewProjectClick}>
+            <Plus className="w-4 h-4" />
+            Nouveau projet
+          </Button>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2">
-                <Plus className="w-4 h-4" />
-                Nouveau projet
-              </Button>
-            </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Nouveau projet de biographie</DialogTitle>
@@ -326,8 +359,8 @@ export default function Dashboard() {
           <AlertDialogHeader>
             <AlertDialogTitle>Supprimer le projet ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer "{deleteTarget?.title}" ? Tous les enregistrements
-              et textes associés seront perdus. Cette action est irréversible.
+              Etes-vous sur de vouloir supprimer "{deleteTarget?.title}" ? Tous les enregistrements
+              et textes associes seront perdus. Cette action est irreversible.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -341,6 +374,13 @@ export default function Dashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Upgrade dialog */}
+      <UpgradeDialog
+        open={upgradeDialogOpen}
+        onOpenChange={setUpgradeDialogOpen}
+        reason="projects"
+      />
     </div>
   );
 }

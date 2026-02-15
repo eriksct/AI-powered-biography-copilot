@@ -107,6 +107,14 @@ serve(async (req) => {
       .update({ transcription_status: 'completed' })
       .eq('id', recordingId);
 
+    // Track transcription usage on the user's profile
+    if (recording.duration_seconds > 0) {
+      await supabase.rpc('increment_transcription_usage', {
+        p_user_id: recording.user_id,
+        p_seconds: recording.duration_seconds,
+      });
+    }
+
     return new Response(
       JSON.stringify({ success: true, segmentCount: segments.length }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

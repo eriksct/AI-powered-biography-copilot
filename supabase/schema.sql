@@ -13,9 +13,26 @@ CREATE TABLE profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT NOT NULL,
   full_name TEXT,
+  plan TEXT NOT NULL DEFAULT 'free' CHECK (plan IN ('free', 'pro')),
+  stripe_customer_id TEXT,
+  subscription_id TEXT,
+  subscription_status TEXT DEFAULT 'none' CHECK (subscription_status IN ('none', 'active', 'past_due', 'canceled', 'incomplete', 'trialing')),
+  transcription_seconds_used INTEGER NOT NULL DEFAULT 0,
+  max_projects INTEGER NOT NULL DEFAULT 1,
+  max_transcription_seconds INTEGER NOT NULL DEFAULT 7200,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Function to atomically increment transcription usage
+CREATE OR REPLACE FUNCTION increment_transcription_usage(p_user_id UUID, p_seconds INTEGER)
+RETURNS void AS $$
+BEGIN
+  UPDATE profiles
+  SET transcription_seconds_used = transcription_seconds_used + p_seconds
+  WHERE id = p_user_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Projects
 CREATE TABLE projects (
@@ -270,23 +287,16 @@ CREATE POLICY "Users can delete own chat attachments" ON storage.objects
 CREATE EXTENSION IF NOT EXISTS pg_net;
 
 -- Function to trigger transcription via Edge Function
+-- NOTE: Replace the URL and service_role_key with your actual values
 CREATE OR REPLACE FUNCTION trigger_auto_transcription()
 RETURNS TRIGGER AS $$
-DECLARE
-  function_url TEXT;
-  service_role_key TEXT;
 BEGIN
-  -- Get Supabase project URL from current request context
-  -- The Edge Function URL will be: https://[PROJECT_REF].supabase.co/functions/v1/transcribe
-  function_url := current_setting('app.settings.supabase_url', true) || '/functions/v1/transcribe';
-  service_role_key := current_setting('app.settings.service_role_key', true);
-
   -- Call the transcribe Edge Function asynchronously using pg_net
   PERFORM net.http_post(
-    url := function_url,
+    url := 'https://uyhjhmpmyhirzkwyjjts.supabase.co/functions/v1/transcribe',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'Authorization', 'Bearer ' || service_role_key
+      'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5aGpobXBteWhpcnprd3lqanRzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNTIzODE2MywiZXhwIjoyMDUwODE0MTYzfQ.5aQGInZsInV5aGpobXBteWhpcnprd3lqanRzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNTIzODE2MywiZXhwIjoyMDUwODE0MTYzfQ'
     ),
     body := jsonb_build_object(
       'recordingId', NEW.id
