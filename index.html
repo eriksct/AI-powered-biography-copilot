@@ -23,6 +23,9 @@
         }
       }(window.location))
     </script>
+    <!-- Amplitude Analytics + Session Replay -->
+    <script src="https://cdn.amplitude.com/script/4a9a6a74489308fe76fcabdba78b40f6.js"></script>
+    <script>window.amplitude.add(window.sessionReplay.plugin({sampleRate: 1}));window.amplitude.init('4a9a6a74489308fe76fcabdba78b40f6', {"fetchRemoteConfig":true,"autocapture":{"attribution":true,"fileDownloads":true,"formInteractions":true,"pageViews":true,"sessions":true,"elementInteractions":true,"networkTracking":true,"webVitals":true,"frustrationInteractions":{"thrashedCursor":true,"errorClicks":true,"deadClicks":true,"rageClicks":true}}});</script>
   </head>
 
   <body>
