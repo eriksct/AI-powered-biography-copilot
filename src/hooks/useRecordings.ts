@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { Recording } from '@/types/biography';
 import { useAuth } from '@/contexts/AuthContext';
+import { trackRecordingCompleted } from '@/lib/analytics';
 
 export function useRecordings(projectId: string) {
   return useQuery({
@@ -62,7 +63,8 @@ export function useCreateRecording() {
 
       return data as Recording;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (data, variables) => {
+      trackRecordingCompleted(variables.projectId, variables.durationSeconds, variables.audioBlob.size);
       queryClient.invalidateQueries({ queryKey: ['recordings', variables.projectId] });
     },
   });

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { Project } from '@/types/biography';
 import { useAuth } from '@/contexts/AuthContext';
+import { trackProjectCreated, trackProjectDeleted } from '@/lib/analytics';
 
 export function useProjects() {
   const { user } = useAuth();
@@ -39,7 +40,8 @@ export function useCreateProject() {
       if (error) throw error;
       return data as Project;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      trackProjectCreated(data.id, !!data.subject_name);
       queryClient.invalidateQueries({ queryKey: ['projects'] });
     },
   });
@@ -72,8 +74,10 @@ export function useDeleteProject() {
     mutationFn: async (projectId: string) => {
       const { error } = await supabase.from('projects').delete().eq('id', projectId);
       if (error) throw error;
+      return projectId;
     },
-    onSuccess: () => {
+    onSuccess: (projectId) => {
+      trackProjectDeleted(projectId);
       queryClient.invalidateQueries({ queryKey: ['projects'] });
     },
   });

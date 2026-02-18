@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import { identifyUser, resetUser, trackSignupCompleted, trackLogin } from '@/lib/analytics';
 
 interface AuthContextType {
   user: User | null;
@@ -28,10 +29,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+
+      // Amplitude: identify user & track auth events
+      if (session?.user) {
+        identifyUser(session.user.id, {
+          email: session.user.email,
+          full_name: session.user.user_metadata?.full_name,
+          signup_date: session.user.created_at,
+        });
+        if (event === 'SIGNED_IN') trackLogin();
+        if (event === 'USER_UPDATED' || event === 'SIGNED_UP') trackSignupCompleted();
+      } else if (event === 'SIGNED_OUT') {
+        resetUser();
+      }
     });
 
     return () => subscription.unsubscribe();

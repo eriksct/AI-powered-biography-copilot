@@ -1,5 +1,7 @@
 import { useProfile } from './useProfile';
 import { useProjects } from './useProjects';
+import { useEffect, useRef } from 'react';
+import { updateUserPlan } from '@/lib/analytics';
 
 export function useSubscription() {
   const { data: profile, isLoading } = useProfile();
@@ -8,6 +10,15 @@ export function useSubscription() {
   const plan = profile?.plan ?? 'free';
   const isPro = plan === 'pro';
   const projectCount = projects?.length ?? 0;
+
+  // Track plan changes in Amplitude
+  const prevPlanRef = useRef(plan);
+  useEffect(() => {
+    if (plan !== prevPlanRef.current) {
+      updateUserPlan(plan);
+      prevPlanRef.current = plan;
+    }
+  }, [plan]);
 
   const canCreateProject = isPro || projectCount < (profile?.max_projects ?? 1);
 

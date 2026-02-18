@@ -7,6 +7,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useTranscriptSearch } from '@/hooks/useTranscript';
 import { cn } from '@/lib/utils';
+import { trackSearchUsed } from '@/lib/analytics';
 
 interface SearchDialogProps {
   projectId: string;
@@ -26,6 +27,7 @@ export function SearchDialog({ projectId, open, onOpenChange, onSelectRecording 
   const { data: results, isLoading } = useTranscriptSearch(projectId, query);
 
   const handleSelect = (result: any) => {
+    trackSearchUsed(projectId, query.length, results?.length ?? 0);
     if (result.recordings?.id) {
       onSelectRecording(result.recordings.id);
     }

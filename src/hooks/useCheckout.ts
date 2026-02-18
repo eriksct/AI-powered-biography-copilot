@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { trackCheckoutStarted } from '@/lib/analytics';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -46,6 +47,7 @@ export function useCheckout() {
   return useMutation({
     mutationFn: async (priceId: string) => {
       console.log('[useCheckout] Invoking with priceId:', priceId);
+      trackCheckoutStarted(priceId);
       const data = await callEdgeFunction('create-checkout-session', { priceId });
       console.log('[useCheckout] Success, URL:', data.url);
       if (data?.url) {

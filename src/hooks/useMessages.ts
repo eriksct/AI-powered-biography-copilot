@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { Message } from '@/types/biography';
+import { trackAIChatSent } from '@/lib/analytics';
 
 export function useMessages(chatThreadId: string | null) {
   return useQuery({
@@ -131,6 +132,7 @@ export function useSendMessage() {
       }
     },
     onSuccess: (_, variables) => {
+      trackAIChatSent(variables.projectId, variables.content.length, !!(variables.attachments?.length));
       queryClient.invalidateQueries({ queryKey: ['messages', variables.chatThreadId] });
       queryClient.invalidateQueries({ queryKey: ['chat-threads', variables.projectId] });
     },

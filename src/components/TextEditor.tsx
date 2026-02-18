@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { useDocument, useSaveDocument } from '@/hooks/useDocument';
 import { Document, Packer, Paragraph, TextRun } from 'docx';
 import { saveAs } from 'file-saver';
+import { trackDocumentExported } from '@/lib/analytics';
 
 interface TextEditorProps {
   projectId: string;
@@ -81,7 +82,8 @@ export function TextEditor({ projectId }: TextEditorProps) {
 
     const blob = await Packer.toBlob(doc);
     saveAs(blob, 'biographie.docx');
-  }, [editor]);
+    trackDocumentExported(projectId);
+  }, [editor, projectId]);
 
   if (isLoading) {
     return (

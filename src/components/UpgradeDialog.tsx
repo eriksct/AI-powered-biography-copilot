@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -11,6 +11,7 @@ import { useCheckout } from '@/hooks/useCheckout';
 import { STRIPE_PRICES } from '@/lib/plans';
 import { Check, Crown, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { trackUpgradeDialogShown } from '@/lib/analytics';
 
 interface UpgradeDialogProps {
   open: boolean;
@@ -35,6 +36,13 @@ const proFeatures = [
 export default function UpgradeDialog({ open, onOpenChange, reason }: UpgradeDialogProps) {
   const checkout = useCheckout();
   const [loadingPrice, setLoadingPrice] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      const trigger = reason === 'projects' ? 'project_limit' : reason === 'transcription' ? 'transcription_limit' : 'settings';
+      trackUpgradeDialogShown(trigger);
+    }
+  }, [open, reason]);
 
   const handleUpgrade = async (priceId: string) => {
     if (!priceId) {
