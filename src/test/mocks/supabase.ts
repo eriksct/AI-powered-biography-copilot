@@ -10,9 +10,12 @@ function createQueryBuilder(resolvedValue: { data: any; error: any } = { data: [
     delete: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
     neq: vi.fn().mockReturnThis(),
+    in: vi.fn().mockReturnThis(),
+    ilike: vi.fn().mockReturnThis(),
     order: vi.fn().mockReturnThis(),
     limit: vi.fn().mockReturnThis(),
     single: vi.fn().mockResolvedValue(resolvedValue),
+    maybeSingle: vi.fn().mockResolvedValue(resolvedValue),
     then: vi.fn((resolve) => resolve(resolvedValue)),
   };
 
@@ -22,6 +25,9 @@ function createQueryBuilder(resolvedValue: { data: any; error: any } = { data: [
   builder.update.mockReturnValue(builder);
   builder.delete.mockReturnValue(builder);
   builder.eq.mockReturnValue(builder);
+  builder.neq.mockReturnValue(builder);
+  builder.in.mockReturnValue(builder);
+  builder.ilike.mockReturnValue(builder);
   builder.order.mockReturnValue(builder);
   builder.limit.mockReturnValue(builder);
 
@@ -64,13 +70,26 @@ export function triggerAuthStateChange(event: string, session: any) {
 
 export const mockQueryBuilder = createQueryBuilder();
 
+// Storage mock
+const mockStorageBucket = {
+  upload: vi.fn().mockResolvedValue({ data: { path: 'test-path' }, error: null }),
+  remove: vi.fn().mockResolvedValue({ data: [], error: null }),
+  createSignedUrl: vi.fn().mockResolvedValue({ data: { signedUrl: 'https://example.com/signed-url' }, error: null }),
+  getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: 'https://example.com/public-url' } }),
+};
+
 export const mockSupabase = {
   auth: mockSupabaseAuth,
   from: vi.fn().mockReturnValue(mockQueryBuilder),
+  storage: {
+    from: vi.fn().mockReturnValue(mockStorageBucket),
+  },
   functions: {
     invoke: vi.fn().mockResolvedValue({ data: null, error: null }),
   },
 };
+
+export { mockStorageBucket };
 
 // Helper to configure from().select()... to resolve with specific data
 export function mockFromResponse(data: any, error: any = null) {
@@ -86,6 +105,16 @@ export function mockInsertResponse(data: any, error: any = null) {
   return builder;
 }
 
+// Helper to configure sequential from() calls with different responses
+export function mockFromSequence(responses: Array<{ data: any; error?: any }>) {
+  let callIndex = 0;
+  mockSupabase.from.mockImplementation(() => {
+    const response = responses[callIndex] || responses[responses.length - 1];
+    callIndex++;
+    return createQueryBuilder({ data: response.data, error: response.error ?? null });
+  });
+}
+
 export function resetSupabaseMocks() {
   authStateCallback = null;
   mockSupabaseAuth.getSession.mockResolvedValue({ data: { session: null } });
@@ -93,4 +122,10 @@ export function resetSupabaseMocks() {
   mockSupabaseAuth.signUp.mockResolvedValue({ data: {}, error: null });
   mockSupabaseAuth.signOut.mockResolvedValue({ error: null });
   mockSupabase.from.mockReturnValue(createQueryBuilder());
+  mockStorageBucket.upload.mockResolvedValue({ data: { path: 'test-path' }, error: null });
+  mockStorageBucket.remove.mockResolvedValue({ data: [], error: null });
+  mockStorageBucket.createSignedUrl.mockResolvedValue({ data: { signedUrl: 'https://example.com/signed-url' }, error: null });
+  mockStorageBucket.getPublicUrl.mockReturnValue({ data: { publicUrl: 'https://example.com/public-url' } });
+  mockSupabase.storage.from.mockReturnValue(mockStorageBucket);
+  mockSupabase.functions.invoke.mockResolvedValue({ data: null, error: null });
 }

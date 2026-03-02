@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biograph — Biography Writer User Journey</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface-hover: #222633;
+    --border: #2a2e3d;
+    --text: #e4e6ef;
+    --text-muted: #8b8fa3;
+    --primary: #6366f1;
+    --primary-light: #818cf8;
+    --accent-green: #34d399;
+    --accent-amber: #fbbf24;
+    --accent-rose: #f472b6;
+    --accent-sky: #38bdf8;
+    --accent-orange: #fb923c;
+    --accent-violet: #a78bfa;
+    --pain: #ef4444;
+    --gain: #22c55e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 48px 24px 32px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-light), var(--accent-sky));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  .header .subtitle {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    max-width: 600px;
+    margin: 0 auto 24px;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  /* Emotion line labels */
+  .emotion-label {
+    display: flex;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Journey container */
+  .journey {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px 64px;
+    position: relative;
+  }
+
+  /* Stage */
+  .stage {
+    position: relative;
+    margin-bottom: 0;
+  }
+  .stage-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 0 12px;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 10;
+  }
+  .stage-number {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: white;
+    flex-shrink: 0;
+  }
+  .stage-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+  }
+  .stage-timeframe {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background: var(--surface);
+    padding: 2px 10px;
+    border-radius: 12px;
+    white-space: nowrap;
+  }
+
+  /* Emotion bar */
+  .emotion-bar {
+    height: 4px;
+    border-radius: 2px;
+    margin: 4px 0 16px 50px;
+    position: relative;
+  }
+  .emotion-bar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 2px;
+    background: inherit;
+    filter: blur(6px);
+    opacity: 0.5;
+  }
+
+  /* Cards container */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    margin-left: 50px;
+    margin-bottom: 24px;
+  }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    transition: all 0.2s;
+    cursor: default;
+  }
+  .card:hover {
+    background: var(--surface-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .card-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .card h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .card p, .card li {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+  .card ul {
+    list-style: none;
+    padding: 0;
+  }
+  .card ul li {
+    position: relative;
+    padding-left: 16px;
+    margin-bottom: 4px;
+  }
+  .card ul li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+
+  /* Tag pills */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .tag {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-weight: 500;
+  }
+  .tag.touchpoint {
+    background: rgba(99,102,241,0.15);
+    color: var(--primary-light);
+  }
+  .tag.channel {
+    background: rgba(56,189,248,0.15);
+    color: var(--accent-sky);
+  }
+  .tag.pain {
+    background: rgba(239,68,68,0.12);
+    color: #f87171;
+  }
+  .tag.gain {
+    background: rgba(34,197,94,0.12);
+    color: #4ade80;
+  }
+  .tag.metric {
+    background: rgba(251,191,36,0.12);
+    color: var(--accent-amber);
+  }
+
+  /* Connector line */
+  .connector {
+    width: 2px;
+    height: 20px;
+    margin: 0 0 0 67px;
+    background: linear-gradient(to bottom, var(--border), transparent);
+  }
+
+  /* Insight callout */
+  .insight {
+    margin: 8px 0 20px 50px;
+    padding: 12px 16px;
+    border-left: 3px solid var(--accent-amber);
+    background: rgba(251,191,36,0.06);
+    border-radius: 0 8px 8px 0;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  .insight strong {
+    color: var(--accent-amber);
+  }
+
+  /* Summary section */
+  .summary {
+    max-width: 1200px;
+    margin: 32px auto 0;
+    padding: 0 24px 64px;
+  }
+  .summary h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+  }
+  .summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .summary-card h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .summary-card p, .summary-card li {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .summary-card ul {
+    list-style: none;
+    padding: 0;
+  }
+  .summary-card ul li {
+    padding-left: 18px;
+    position: relative;
+    margin-bottom: 4px;
+  }
+  .summary-card ul li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--primary-light);
+  }
+
+  @media (max-width: 640px) {
+    .header h1 { font-size: 1.5rem; }
+    .cards { grid-template-columns: 1fr; margin-left: 0; }
+    .emotion-bar, .insight, .connector { margin-left: 0; }
+    .stage-header { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Biograph — User Journey Map</h1>
+  <p class="subtitle">End-to-end experience of a professional biography writer, from discovering Biograph through delivering a completed biography.</p>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-green)"></div> Actions</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-sky)"></div> Thoughts & Feelings</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-rose)"></div> Pain Points</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-amber)"></div> Opportunities</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-violet)"></div> Touchpoints</div>
+  </div>
+</div>
+
+<div class="journey">
+
+  <!-- =============== STAGE 1 =============== -->
+  <div class="stage">
+    <div class="stage-header">
+      <div class="stage-number" style="background:var(--accent-violet)">1</div>
+      <div class="stage-title">Awareness & Discovery</div>
+      <div class="stage-timeframe">Days 1–7</div>
+    </div>
+    <div class="emotion-bar" style="background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%)"></div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Actions</div>
+        <h4>Finding Biograph</h4>
+        <ul>
+          <li style="--dot-color: var(--accent-green)">Searches "biography writing tools" or "interview transcription for biographers"</li>
+          <li>Discovers Biograph through a colleague's recommendation or online community</li>
+          <li>Visits the landing page, watches the 2-minute demo video</li>
+          <li>Reads feature descriptions: recording, transcription, AI-assisted writing</li>
+        </ul>
+        <div class="tags">
+          <span class="tag touchpoint">Landing page</span>
+          <span class="tag channel">Search / Word-of-mouth</span>
+          <span class="tag touchpoint">Demo video</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Thoughts & Feelings</div>
+        <h4>"Could this actually solve my workflow?"</h4>
+        <p>Curious but skeptical. Has tried generic transcription tools (Otter, Rev) that didn't understand the biography workflow. Wonders if this is just another tool that won't fit. The promise of going from interview to draft catches attention.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Pain Points</div>
+        <h4>Barriers to Trying</h4>
+        <ul>
+          <li>Unsure if AI can preserve the subject's authentic voice</li>
+          <li>Worried about data privacy for sensitive life stories</li>
+          <li>No way to test with real material before committing</li>
+        </ul>
+        <div class="tags">
+          <span class="tag pain">Trust in AI quality</span>
+          <span class="tag pain">Privacy concerns</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Opportunities</div>
+        <h4>Build Trust Early</h4>
+        <ul>
+          <li>Show a real before/after example (transcript → polished prose)</li>
+          <li>Display security credentials and data handling practices prominently</li>
+          <li>Offer testimonials from other biography writers specifically</li>
+        </ul>
+        <div class="tags">
+          <span class="tag gain">Social proof</span>
+          <span class="tag metric">Landing → Signup rate</span>
+        </div>
+      </div>
+    </div>
+    <div class="insight"><strong>Key Insight:</strong> The #1 concern at this stage isn't price — it's whether the AI will misrepresent their subject's voice. Address this fear head-on with concrete examples.</div>
+  </div>
+
+  <div class="connector"></div>
+
+  <!-- =============== STAGE 2 =============== -->
+  <div class="stage">
+    <div class="stage-header">
+      <div class="stage-number" style="background:var(--primary)">2</div>
+      <div class="stage-title">Sign-Up & Onboarding</div>
+      <div class="stage-timeframe">Day 1 of trial</div>
+    </div>
+    <div class="emotion-bar" style="background: linear-gradient(90deg, #f59e0b 0%, #34d399 40%, #6366f1 100%)"></div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Actions</div>
+        <h4>Creating an Account</h4>
+        <ul>
+          <li>Clicks "Commencer gratuitement" — no credit card required</li>
+          <li>Signs up with email & password</li>
+          <li>Confirms email verification</li>
+          <li>Lands on the Dashboard — empty state with guidance</li>
+        </ul>
+        <div class="tags">
+          <span class="tag touchpoint">Auth page</span>
+          <span class="tag touchpoint">Confirmation email</span>
+          <span class="tag touchpoint">Dashboard</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Actions</div>
+        <h4>First Project Setup</h4>
+        <ul>
+          <li>Creates first biography project (title, subject name, description)</li>
+          <li>Sees the project workspace: Recordings panel + Text Editor + AI Assistant</li>
+          <li>Explores the three-pane layout on desktop</li>
+        </ul>
+        <div class="tags">
+          <span class="tag touchpoint">New project dialog</span>
+          <span class="tag touchpoint">Project workspace</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Thoughts & Feelings</div>
+        <h4>"This feels purpose-built for me"</h4>
+        <p>Pleasantly surprised by the focused interface — no bloated features. The recording + editor + AI panel layout mirrors their actual workflow. Slight uncertainty about what to do first.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Opportunities</div>
+        <h4>Guide the First Session</h4>
+        <ul>
+          <li>Contextual empty-state prompts: "Ready for your first interview? Hit record."</li>
+          <li>Optional guided walkthrough (non-intrusive tooltips)</li>
+          <li>Pre-loaded sample project to explore features risk-free</li>
+        </ul>
+        <div class="tags">
+          <span class="tag gain">Reduce time-to-value</span>
+          <span class="tag metric">Signup → First project rate</span>
+        </div>
+      </div>
+    </div>
+    <div class="insight"><strong>Key Insight:</strong> The free trial with no credit card is strong, but onboarding needs to get the writer to their first recording within 5 minutes. Every extra step risks drop-off.</div>
+  </div>
+
+  <div class="connector"></div>
+
+  <!-- =============== STAGE 3 =============== -->
+  <div class="stage">
+    <div class="stage-header">
+      <div class="stage-number" style="background:var(--accent-green)">3</div>
+      <div class="stage-title">First Interview & Recording</div>
+      <div class="stage-timeframe">Week 1–2</div>
+    </div>
+    <div class="emotion-bar" style="background: linear-gradient(90deg, #6366f1 0%, #34d399 50%, #22c55e 100%)"></div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Actions</div>
+        <h4>Recording the Interview</h4>
+        <ul>
+          <li>Arrives at subject's home, opens Biograph on laptop</li>
+          <li>One-click start recording — begins interview</li>
+          <li>Sees real-time transcription appearing as they talk</li>
+          <li>Bookmarks key moments during the conversation</li>
+          <li>Pauses/resumes as the subject takes breaks</li>
+          <li>Stops recording after 60–90 minutes (subject tires)</li>
+        </ul>
+        <div class="tags">
+          <span class="tag touchpoint">Recording interface</span>
+          <span class="tag touchpoint">Real-time transcription</span>
+          <span class="tag touchpoint">Bookmarking</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Thoughts & Feelings</div>
+        <h4>"I can actually be present in the conversation"</h4>
+        <p>This is the "aha moment." The writer maintains eye contact, listens deeply, knowing the platform is capturing everything. Feels liberated from note-taking anxiety. Emotional connection with the subject strengthens.</p>
+        <div class="tags">
+          <span class="tag gain">Peak emotional moment</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Pain Points</div>
+        <h4>Real-World Friction</h4>
+        <ul>
+          <li>Subject's home may have poor WiFi — can transcription work offline?</li>
+          <li>Elderly voices / accents may reduce transcription accuracy</li>
+          <li>Browser-based recording feels less reliable than a dedicated app</li>
+          <li>Fear of losing the recording if something crashes</li>
+        </ul>
+        <div class="tags">
+          <span class="tag pain">Connectivity anxiety</span>
+          <span class="tag pain">Accuracy with elderly voices</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Opportunities</div>
+        <h4>Build Recording Confidence</h4>
+        <ul>
+          <li>Offline-capable recording with sync-later transcription</li>
+          <li>Visual confidence indicators during recording ("Audio quality: Good")</li>
+          <li>Auto-save with crash recovery guarantee</li>
+          <li>Low-confidence word highlighting post-transcription</li>
+        </ul>
+        <div class="tags">
+          <span class="tag gain">Reliability = trust</span>
+          <span class="tag metric">Recording completion rate</span>
+        </div>
+      </div>
+    </div>
+    <div class="insight"><strong>Key Insight:</strong> The interview is the highest-stakes moment. If the writer trusts the recording, they'll trust the platform. Reliability here makes or breaks long-term retention.</div>
+  </div>
+
+  <div class="connector"></div>
+
+  <!-- =============== STAGE 4 =============== -->
+  <div class="stage">
+    <div class="stage-header">
+      <div class="stage-number" style="background:var(--accent-sky)">4</div>
+      <div class="stage-title">Review & Organize</div>
+      <div class="stage-timeframe">Week 2–4</div>
+    </div>
+    <div class="emotion-bar" style="background: linear-gradient(90deg, #22c55e 0%, #38bdf8 50%, #6366f1 100%)"></div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Actions</div>
+        <h4>Working with Transcripts</h4>
+        <ul>
+          <li>Reviews completed transcription in the recordings panel</li>
+          <li>Uses keyword search (Cmd+K) to find mentions of people, places, events</li>
+          <li>Clicks on transcript text to jump to exact audio moment</li>
+          <li>Corrects low-confidence words by listening to the audio</li>
+          <li>Conducts additional interview sessions, building up material</li>
+        </ul>
+        <div class="tags">
+          <span class="tag touchpoint">Transcript search</span>
+          <span class="tag touchpoint">Audio playback</span>
+          <span class="tag touchpoint">Recordings list</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Actions</div>
+        <h4>Organizing the Story</h4>
+        <ul>
+          <li>Tags transcript segments by theme (childhood, career, family)</li>
+          <li>Drags story fragments onto the visual timeline</li>
+          <li>Places stories chronologically, handling time jumps</li>
+          <li>Spots gaps — realizes they need to ask about the 1970s in the next session</li>
+        </ul>
+        <div class="tags">
+          <span class="tag touchpoint">Timeline view</span>
+          <span class="tag touchpoint">Theme tagging</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Thoughts & Feelings</div>
+        <h4>"I'm saving so much time"</h4>
+        <p>The old process meant re-listening to entire recordings. Now, finding a specific story takes seconds. The timeline reveals the life story's shape. Growing excitement as the biography structure emerges from the material.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Pain Points</div>
+        <h4>Organization Complexity</h4>
+        <ul>
+          <li>Subject told the same story differently across sessions — which version to use?</li>
+          <li>Some stories don't fit neatly into a timeline (recurring themes, feelings)</li>
+          <li>Lots of material from multiple sessions can feel overwhelming</li>
+        </ul>
+        <div class="tags">
+          <span class="tag pain">Conflicting versions</span>
+          <span class="tag pain">Information overload</span>
+        </div>
+      </div>
+    </div>
+    <div class="insight"><strong>Key Insight:</strong> This is where the "70% time reduction on transcript review" promise gets validated. Writers who make it through this stage with a clear structure are very likely to convert to paid.</div>
+  </div>
+
+  <div class="connector"></div>
+
+  <!-- =============== STAGE 5 =============== -->
+  <div class="stage">
+    <div class="stage-header">
+      <div class="stage-number" style="background:var(--accent-rose)">5</div>
+      <div class="stage-title">Writing & AI Assistance</div>
+      <div class="stage-timeframe">Week 3–8</div>
+    </div>
+    <div class="emotion-bar" style="background: linear-gradient(90deg, #6366f1 0%, #a78bfa 30%, #f472b6 60%, #34d399 100%)"></div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Actions</div>
+        <h4>Drafting the Biography</h4>
+        <ul>
+          <li>Selects transcript sections and converts to narrative prose with one click</li>
+          <li>Uses the AI rephrasing tool — gets 3 options preserving the subject's voice</li>
+          <li>Applies the conciseness tool to tighten wordy passages</li>
+          <li>Writes directly in the distraction-free editor, interleaving with AI suggestions</li>
+          <li>Hovers over drafted paragraphs to see source transcript links</li>
+        </ul>
+        <div class="tags">
+          <span class="tag touchpoint">Text editor</span>
+          <span class="tag touchpoint">AI assistant panel</span>
+          <span class="tag touchpoint">Transcript-to-draft</span>
+          <span class="tag touchpoint">Source linking</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Thoughts & Feelings</div>
+        <h4>"The AI actually gets the tone right"</h4>
+        <p>Initially cautious with AI suggestions — accepts some, rejects others. Over time, learns to trust the rephrasing while maintaining editorial control. The blank-page anxiety vanishes because they always have transcript material to start from. Flow state unlocked.</p>
+        <div class="tags">
+          <span class="tag gain">Creative flow</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Pain Points</div>
+        <h4>AI Limitations</h4>
+        <ul>
+          <li>AI occasionally produces generic phrasing that loses the subject's personality</li>
+          <li>First-to-third person conversion sometimes feels mechanical</li>
+          <li>No style consistency check across chapters yet</li>
+          <li>Revision history could be easier to navigate for long documents</li>
+        </ul>
+        <div class="tags">
+          <span class="tag pain">Voice authenticity</span>
+          <span class="tag pain">Long-doc management</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Opportunities</div>
+        <h4>Deepen AI Partnership</h4>
+        <ul>
+          <li>Let the AI learn this writer's style after 10,000+ words (Phase 2)</li>
+          <li>Flag inconsistencies between transcript sections automatically</li>
+          <li>Suggest which transcript segments haven't been incorporated yet</li>
+          <li>"Coverage map" showing what percentage of source material is in the draft</li>
+        </ul>
+        <div class="tags">
+          <span class="tag gain">Stickiness driver</span>
+          <span class="tag metric">AI feature engagement rate (target: 70%)</span>
+        </div>
+      </div>
+    </div>
+    <div class="insight"><strong>Key Insight:</strong> The writing phase is where daily engagement is highest and where the platform proves its value. Writers who use transcript-to-draft + rephrasing report 50%+ efficiency gains. This is the core retention loop.</div>
+  </div>
+
+  <div class="connector"></div>
+
+  <!-- =============== STAGE 6 =============== -->
+  <div class="stage">
+    <div class="stage-header">
+      <div class="stage-number" style="background:var(--accent-amber)">6</div>
+      <div class="stage-title">Review & Refinement</div>
+      <div class="stage-timeframe">Week 7–10</div>
+    </div>
+    <div class="emotion-bar" style="background: linear-gradient(90deg, #34d399 0%, #fbbf24 50%, #34d399 100%)"></div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Actions</div>
+        <h4>Polishing the Draft</h4>
+        <ul>
+          <li>Re-reads the full draft, checking flow between chapters</li>
+          <li>Uses source linking to verify accuracy against original transcripts</li>
+          <li>Revisits audio for emotional moments — ensures the tone is right</li>
+          <li>Applies AI conciseness tool to tighten the final text</li>
+          <li>Checks revision history to compare earlier and final versions</li>
+        </ul>
+        <div class="tags">
+          <span class="tag touchpoint">Revision history</span>
+          <span class="tag touchpoint">Source verification</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Thoughts & Feelings</div>
+        <h4>"I'm confident this is accurate and true"</h4>
+        <p>The source linking feature is unexpectedly powerful here — the writer can trace every claim back to the original words. Confidence builds. Pride in the work emerges. Some anxiety about the subject's reaction.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Pain Points</div>
+        <h4>Gaps in the Polish Workflow</h4>
+        <ul>
+          <li>No subject review workflow yet — must share drafts manually (email, print)</li>
+          <li>No export to professional formats (PDF, EPUB) in MVP</li>
+          <li>Cross-referencing between chapters is fully manual</li>
+        </ul>
+        <div class="tags">
+          <span class="tag pain">Manual export</span>
+          <span class="tag pain">No subject review flow</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Opportunities</div>
+        <h4>Close the Loop</h4>
+        <ul>
+          <li>Read-only sharing link for subjects to review and comment (Phase 3)</li>
+          <li>One-click export to PDF with professional biography templates</li>
+          <li>Automated accuracy report: "100% of facts traced to source audio"</li>
+        </ul>
+        <div class="tags">
+          <span class="tag gain">Subject collaboration</span>
+          <span class="tag metric">Accuracy confidence score (target: 90%+)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector"></div>
+
+  <!-- =============== STAGE 7 =============== -->
+  <div class="stage">
+    <div class="stage-header">
+      <div class="stage-number" style="background:var(--accent-orange)">7</div>
+      <div class="stage-title">Delivery & Completion</div>
+      <div class="stage-timeframe">Week 10–12</div>
+    </div>
+    <div class="emotion-bar" style="background: linear-gradient(90deg, #34d399 0%, #22c55e 50%, #6366f1 100%)"></div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Actions</div>
+        <h4>Delivering the Biography</h4>
+        <ul>
+          <li>Copies final text from Biograph editor into their publishing tool</li>
+          <li>Formats, adds photos, creates the final book externally</li>
+          <li>Delivers the completed biography to the subject and their family</li>
+        </ul>
+        <div class="tags">
+          <span class="tag touchpoint">Editor export</span>
+          <span class="tag channel">External publishing</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Thoughts & Feelings</div>
+        <h4>"This was my best project yet"</h4>
+        <p>Deep satisfaction. The biography feels more accurate, more human, and was completed significantly faster. The subject is moved to tears reading their life story. The writer mentally compares the experience to their pre-Biograph process.</p>
+        <div class="tags">
+          <span class="tag gain">Emotional payoff</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Pain Points</div>
+        <h4>Handoff Friction</h4>
+        <ul>
+          <li>Copy-pasting from the editor loses some formatting</li>
+          <li>No integrated photo timeline or book layout</li>
+          <li>Archiving the project and recordings isn't clear</li>
+        </ul>
+        <div class="tags">
+          <span class="tag pain">No native export</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Opportunities</div>
+        <h4>Professional Output</h4>
+        <ul>
+          <li>DOCX/PDF/EPUB export with biography formatting templates (Phase 3)</li>
+          <li>Photo integration on the timeline (Phase 3)</li>
+          <li>Project archiving with long-term storage options</li>
+        </ul>
+        <div class="tags">
+          <span class="tag gain">End-to-end value</span>
+          <span class="tag metric">Project completion rate</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector"></div>
+
+  <!-- =============== STAGE 8 =============== -->
+  <div class="stage">
+    <div class="stage-header">
+      <div class="stage-number" style="background:var(--accent-green)">8</div>
+      <div class="stage-title">Retention & Advocacy</div>
+      <div class="stage-timeframe">Month 3+</div>
+    </div>
+    <div class="emotion-bar" style="background: linear-gradient(90deg, #6366f1 0%, #22c55e 50%, #34d399 100%)"></div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Actions</div>
+        <h4>Coming Back for More</h4>
+        <ul>
+          <li>Starts a second biography project — now familiar with the workflow</li>
+          <li>Converts from free trial to Pro subscription (€49/month)</li>
+          <li>Recommends Biograph to colleagues at a biographers' conference</li>
+          <li>Adjusts settings, manages subscription through the Settings page</li>
+        </ul>
+        <div class="tags">
+          <span class="tag touchpoint">Settings / subscription</span>
+          <span class="tag touchpoint">Upgrade dialog</span>
+          <span class="tag channel">Word-of-mouth</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Thoughts & Feelings</div>
+        <h4>"I can't go back to the old way"</h4>
+        <p>Biograph is now part of their professional identity. They think of it as their "writing partner," not just a tool. The ROI is obvious: saving 26–33 hours per project at €50–100/hr makes €49/month trivial.</p>
+        <div class="tags">
+          <span class="tag gain">Strong loyalty</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Opportunities</div>
+        <h4>Grow Through Users</h4>
+        <ul>
+          <li>Referral program: "Give a colleague 1 month free"</li>
+          <li>Community forum for biographers to share tips</li>
+          <li>Annual plan discount for committed professionals</li>
+          <li>Feature request pipeline to keep power users engaged</li>
+        </ul>
+        <div class="tags">
+          <span class="tag gain">Organic growth</span>
+          <span class="tag metric">Retention target: 80%+ second project</span>
+          <span class="tag metric">NPS target: 50+</span>
+        </div>
+      </div>
+    </div>
+    <div class="insight"><strong>Key Insight:</strong> Retained users are the growth engine. Each satisfied biographer knows 5–10 others in the profession. The path from trial → paid → advocate must be as frictionless as the writing experience itself.</div>
+  </div>
+</div>
+
+<!-- =============== SUMMARY =============== -->
+<div class="summary">
+  <h2>Journey Summary</h2>
+  <div class="summary-grid">
+    <div class="summary-card">
+      <h3>🎯 Critical Moments of Truth</h3>
+      <ul>
+        <li><strong>First recording:</strong> Does the writer trust the platform to capture everything?</li>
+        <li><strong>First AI suggestion:</strong> Does the rephrasing feel authentic to the subject's voice?</li>
+        <li><strong>First source link click:</strong> Can the writer verify accuracy in seconds?</li>
+        <li><strong>Project completion:</strong> Was this meaningfully faster than the old way?</li>
+      </ul>
+    </div>
+    <div class="summary-card">
+      <h3>🔴 Top Pain Points to Address</h3>
+      <ul>
+        <li>Recording reliability in low-connectivity environments</li>
+        <li>Transcription accuracy for elderly voices and accents</li>
+        <li>AI voice authenticity — must preserve the subject, not sound generic</li>
+        <li>No native export or subject review workflow in MVP</li>
+        <li>Long-document management as biographies grow past 50,000 words</li>
+      </ul>
+    </div>
+    <div class="summary-card">
+      <h3>🟢 Biggest Value Drivers</h3>
+      <ul>
+        <li>Being present in interviews instead of anxiously note-taking</li>
+        <li>Finding any story moment in seconds, not hours</li>
+        <li>Starting from transcript material — never facing a blank page</li>
+        <li>Source linking for confidence in accuracy</li>
+        <li>Overall time savings of 26–33 hours per project</li>
+      </ul>
+    </div>
+    <div class="summary-card">
+      <h3>📊 Key Metrics by Stage</h3>
+      <ul>
+        <li><strong>Awareness:</strong> Landing page → Signup conversion</li>
+        <li><strong>Onboarding:</strong> Signup → First project (< 5 min)</li>
+        <li><strong>Recording:</strong> Recording completion rate, transcription accuracy</li>
+        <li><strong>Organizing:</strong> Search frequency (target: 5+/hr), timeline usage (60%+)</li>
+        <li><strong>Writing:</strong> AI feature engagement (70%+), daily active time</li>
+        <li><strong>Delivery:</strong> Project completion rate, time-to-first-draft</li>
+        <li><strong>Retention:</strong> Second project rate (80%+), NPS (50+), paid conversion (30%+)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
