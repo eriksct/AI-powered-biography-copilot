@@ -303,7 +303,7 @@ export default function Dashboard() {
             {/* Project cards */}
             {projects?.map((project) => {
               const stats = statsMap?.[project.id];
-              const recordingCount = stats?.recording_count ?? 0;
+              const interviewCount = stats?.interview_count ?? 0;
               const wordCount = stats?.word_count ?? 0;
               // Progress: based on word count toward a 2000-word target
               const progressValue = Math.min(100, Math.floor((wordCount / 2000) * 100));
@@ -380,7 +380,7 @@ export default function Dashboard() {
 
                     {/* Stats row */}
                     <div className="flex items-center gap-4">
-                      <StatPill icon={Mic} value={recordingCount} label={recordingCount === 1 ? 'entretien' : 'entretiens'} />
+                      <StatPill icon={Mic} value={interviewCount} label={interviewCount === 1 ? 'entretien' : 'entretiens'} />
                       <StatPill icon={FileText} value={wordCount} label="mots" />
                     </div>
 
