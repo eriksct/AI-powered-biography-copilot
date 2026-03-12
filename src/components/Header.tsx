@@ -10,12 +10,17 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+interface BreadcrumbItem {
+  label: string;
+  href?: string;
+}
+
 interface HeaderProps {
-  biographyTitle: string;
+  breadcrumbs: BreadcrumbItem[];
   onSearchClick?: () => void;
 }
 
-export function Header({ biographyTitle, onSearchClick }: HeaderProps) {
+export function Header({ breadcrumbs, onSearchClick }: HeaderProps) {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
 
@@ -26,26 +31,39 @@ export function Header({ biographyTitle, onSearchClick }: HeaderProps) {
 
   return (
     <header className="flex items-center justify-between px-4 py-2 border-b border-border bg-panel">
-      <div className="flex items-center gap-3 text-sm">
+      <div className="flex items-center gap-3 text-sm min-w-0">
         <button
           onClick={() => navigate('/dashboard')}
-          className="flex items-center justify-center w-8 h-8 bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors cursor-pointer"
+          className="flex items-center justify-center w-8 h-8 bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors cursor-pointer shrink-0"
         >
           <BookOpen className="w-4 h-4 text-primary" />
         </button>
-        <nav className="flex items-center gap-2">
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Mes biographies
-          </button>
-          <ChevronRight className="w-3 h-3 text-muted-foreground" />
-          <span className="font-medium text-foreground">{biographyTitle}</span>
+        <nav className="flex items-center gap-2 min-w-0">
+          {breadcrumbs.map((item, index) => {
+            const isLast = index === breadcrumbs.length - 1;
+            return (
+              <span key={index} className="flex items-center gap-2 min-w-0">
+                {index > 0 && <ChevronRight className="w-3 h-3 text-muted-foreground shrink-0" />}
+                {item.href && !isLast ? (
+                  <button
+                    onClick={() => navigate(item.href!)}
+                    className="text-muted-foreground hover:text-foreground transition-colors truncate max-w-[200px]"
+                    title={item.label}
+                  >
+                    {item.label}
+                  </button>
+                ) : (
+                  <span className="font-medium text-foreground truncate max-w-[200px]" title={item.label}>
+                    {item.label}
+                  </span>
+                )}
+              </span>
+            );
+          })}
         </nav>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 shrink-0">
         {onSearchClick && (
           <Button
             variant="outline"

@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { ReactElement, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { Project, Recording, TranscriptSegment, Document, ChatThread, Message, Profile } from '@/types/biography';
+import { Project, Interview, Recording, TranscriptSegment, Document, ChatThread, Message, Profile } from '@/types/biography';
 
 // ─── Mock Data Factories ─────────────────────────────────────────
 
@@ -45,13 +45,27 @@ export function createMockProject(overrides: Partial<Project> = {}): Project {
   };
 }
 
+export function createMockInterview(overrides: Partial<Interview> = {}): Interview {
+  return {
+    id: 'int-1',
+    project_id: 'proj-1',
+    user_id: 'user-123',
+    number: 1,
+    interview_date: '2025-01-10',
+    theme: 'Enfance et famille',
+    created_at: '2025-01-10T00:00:00Z',
+    updated_at: '2025-01-10T00:00:00Z',
+    ...overrides,
+  };
+}
+
 export function createMockRecording(overrides: Partial<Recording> = {}): Recording {
   return {
     id: 'rec-1',
-    project_id: 'proj-1',
+    interview_id: 'int-1',
     user_id: 'user-123',
     name: 'Entretien 1',
-    audio_path: 'user-123/proj-1/audio-file.webm',
+    audio_path: 'user-123/int-1/audio-file.webm',
     duration_seconds: 120,
     file_size_bytes: 1024000,
     transcription_status: 'completed',
@@ -79,7 +93,7 @@ export function createMockTranscriptSegment(overrides: Partial<TranscriptSegment
 export function createMockDocument(overrides: Partial<Document> = {}): Document {
   return {
     id: 'doc-1',
-    project_id: 'proj-1',
+    interview_id: 'int-1',
     user_id: 'user-123',
     title: 'Sans titre',
     content: { type: 'doc', content: [] },
@@ -92,7 +106,7 @@ export function createMockDocument(overrides: Partial<Document> = {}): Document 
 export function createMockChatThread(overrides: Partial<ChatThread> = {}): ChatThread {
   return {
     id: 'thread-1',
-    project_id: 'proj-1',
+    interview_id: 'int-1',
     user_id: 'user-123',
     title: 'Nouvelle discussion',
     created_at: '2025-01-10T00:00:00Z',
@@ -122,6 +136,7 @@ export function createMockProfile(overrides: Partial<Profile> = {}): Profile {
     transcription_seconds_used: 0,
     max_projects: 1,
     max_transcription_seconds: 7200,
+    max_interviews_per_project: 2,
     created_at: '2025-01-01T00:00:00Z',
     updated_at: '2025-01-01T00:00:00Z',
     ...overrides,

@@ -26,12 +26,12 @@ function createWrapper() {
 }
 
 describe('useDocument', () => {
-  it('fetches existing document for a project', async () => {
+  it('fetches existing document for an interview', async () => {
     const doc = createMockDocument();
     mockFromResponse(doc);
 
     const { wrapper } = createWrapper();
-    const { result } = renderHook(() => useDocument('proj-1'), { wrapper });
+    const { result } = renderHook(() => useDocument('int-1'), { wrapper });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual(doc);
@@ -47,13 +47,13 @@ describe('useDocument', () => {
     ]);
 
     const { wrapper } = createWrapper();
-    const { result } = renderHook(() => useDocument('proj-1'), { wrapper });
+    const { result } = renderHook(() => useDocument('int-1'), { wrapper });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual(newDoc);
   });
 
-  it('does not fetch when projectId is empty', () => {
+  it('does not fetch when interviewId is empty', () => {
     const { wrapper } = createWrapper();
     const { result } = renderHook(() => useDocument(''), { wrapper });
     expect(result.current.isFetching).toBe(false);
@@ -63,7 +63,7 @@ describe('useDocument', () => {
     mockFromResponse(null, { message: 'DB error' });
 
     const { wrapper } = createWrapper();
-    const { result } = renderHook(() => useDocument('proj-1'), { wrapper });
+    const { result } = renderHook(() => useDocument('int-1'), { wrapper });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
   });
@@ -75,7 +75,7 @@ describe('useSaveDocument', () => {
     mockFromResponse(null);
 
     const { wrapper } = createWrapper();
-    const { result } = renderHook(() => useSaveDocument(), { wrapper });
+    const { result } = renderHook(() => useSaveDocument('int-1'), { wrapper });
 
     act(() => {
       result.current.save('doc-1', { type: 'doc', content: [{ type: 'paragraph' }] });
@@ -99,7 +99,7 @@ describe('useSaveDocument', () => {
     mockFromResponse(null);
 
     const { wrapper } = createWrapper();
-    const { result } = renderHook(() => useSaveDocument(), { wrapper });
+    const { result } = renderHook(() => useSaveDocument('int-1'), { wrapper });
 
     act(() => {
       result.current.save('doc-1', { content: 'first' });
@@ -121,6 +121,29 @@ describe('useSaveDocument', () => {
       (call: any[]) => call[0] === 'documents'
     );
     expect(documentsCalls.length).toBe(1);
+
+    vi.useRealTimers();
+  });
+
+  it('invalidates interview-context cache on save', async () => {
+    vi.useFakeTimers();
+    mockFromResponse(null);
+
+    const { wrapper, queryClient } = createWrapper();
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+    const { result } = renderHook(() => useSaveDocument('int-1'), { wrapper });
+
+    act(() => {
+      result.current.save('doc-1', { content: 'updated' });
+    });
+
+    // Advance past debounce, then flush promises for mutation to complete
+    await act(async () => {
+      vi.advanceTimersByTime(2100);
+      await vi.runAllTimersAsync();
+    });
+
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['interview-context', 'int-1'] });
 
     vi.useRealTimers();
   });

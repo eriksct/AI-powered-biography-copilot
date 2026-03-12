@@ -7,17 +7,18 @@ import { RecordingsList } from '@/components/RecordingsList';
 import { TextEditor } from '@/components/TextEditor';
 import { AIAssistant } from '@/components/AIAssistant';
 import { SearchDialog } from '@/components/SearchDialog';
-import { Project as ProjectType } from '@/types/biography';
+import { Project as ProjectType, Interview as InterviewType } from '@/types/biography';
+import { useInterview } from '@/hooks/useInterviews';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-export default function Project() {
-  const { projectId } = useParams<{ projectId: string }>();
+export default function Interview() {
+  const { projectId, interviewId } = useParams<{ projectId: string; interviewId: string }>();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [selectedRecordingId, setSelectedRecordingId] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
 
-  const { data: project, isLoading } = useQuery({
+  const { data: project, isLoading: projectLoading } = useQuery({
     queryKey: ['project', projectId],
     queryFn: async (): Promise<ProjectType> => {
       const { data, error } = await supabase
@@ -31,6 +32,8 @@ export default function Project() {
     enabled: !!projectId,
   });
 
+  const { data: interview, isLoading: interviewLoading } = useInterview(interviewId || null);
+
   // Keyboard shortcut for search
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -43,37 +46,43 @@ export default function Project() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  if (isLoading) {
+  if (projectLoading || interviewLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-background">
-        <div className="text-muted-foreground">Chargement du projet...</div>
+        <div className="text-muted-foreground">Chargement de l'entretien...</div>
       </div>
     );
   }
 
-  if (!project) {
+  if (!project || !interview) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-background gap-4">
-        <div className="text-foreground">Projet introuvable</div>
+        <div className="text-foreground">Entretien introuvable</div>
         <button
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate(projectId ? `/project/${projectId}` : '/dashboard')}
           className="text-sm text-primary hover:underline"
         >
-          Retour au tableau de bord
+          Retour
         </button>
       </div>
     );
   }
 
+  const interviewLabel = `Entretien ${interview.number} — ${interview.theme || ''}`.trim();
+
   if (isMobile) {
     return (
       <div className="flex flex-col h-screen bg-background">
         <Header
-          biographyTitle={project.title}
+          breadcrumbs={[
+            { label: 'Mes biographies', href: '/dashboard' },
+            { label: project.title, href: `/project/${projectId}` },
+            { label: interviewLabel },
+          ]}
         />
         <div className="flex-1 overflow-hidden">
           <RecordingsList
-            projectId={project.id}
+            interviewId={interview.id}
             selectedRecordingId={selectedRecordingId}
             onSelectRecording={setSelectedRecordingId}
             fullScreen
@@ -86,7 +95,11 @@ export default function Project() {
   return (
     <div className="flex flex-col h-screen bg-background">
       <Header
-        biographyTitle={project.title}
+        breadcrumbs={[
+          { label: 'Mes biographies', href: '/dashboard' },
+          { label: project.title, href: `/project/${projectId}` },
+          { label: interviewLabel },
+        ]}
         onSearchClick={() => setSearchOpen(true)}
       />
 
@@ -94,7 +107,7 @@ export default function Project() {
         {/* Left panel - Recordings */}
         <div className="w-64 shrink-0 h-full overflow-hidden">
           <RecordingsList
-            projectId={project.id}
+            interviewId={interview.id}
             selectedRecordingId={selectedRecordingId}
             onSelectRecording={setSelectedRecordingId}
           />
@@ -102,20 +115,22 @@ export default function Project() {
 
         {/* Center panel - Text Editor */}
         <div className="flex-1 min-w-0 h-full overflow-hidden">
-          <TextEditor projectId={project.id} />
+          <TextEditor interviewId={interview.id} />
         </div>
 
         {/* Right panel - AI Assistant */}
         <div className="w-80 shrink-0 h-full overflow-hidden">
           <AIAssistant
-            projectId={project.id}
+            interviewId={interview.id}
             subjectName={project.subject_name}
+            interviewTheme={interview.theme}
+            interviewNumber={interview.number}
           />
         </div>
       </div>
 
       <SearchDialog
-        projectId={project.id}
+        interviewId={interview.id}
         open={searchOpen}
         onOpenChange={setSearchOpen}
         onSelectRecording={setSelectedRecordingId}

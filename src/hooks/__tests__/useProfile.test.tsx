@@ -53,6 +53,17 @@ describe('useProfile', () => {
     expect(result.current.data?.max_projects).toBe(50);
   });
 
+  it('returns max_interviews_per_project in profile', async () => {
+    const profile = createMockProfile({ max_interviews_per_project: 10 });
+    mockFromResponse(profile);
+
+    const { wrapper } = createWrapper();
+    const { result } = renderHook(() => useProfile(), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.max_interviews_per_project).toBe(10);
+  });
+
   it('handles fetch error', async () => {
     mockFromResponse(null, { message: 'Profile not found' });
 

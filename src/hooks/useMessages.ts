@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { Message } from '@/types/biography';
+import { Message, Source } from '@/types/biography';
 import { trackAIChatSent } from '@/lib/analytics';
 
 export function useMessages(chatThreadId: string | null) {
@@ -23,12 +23,43 @@ export function useSendMessage() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    onMutate: async (params) => {
+      await queryClient.cancelQueries({ queryKey: ['messages', params.chatThreadId] });
+
+      const previous = queryClient.getQueryData<Message[]>(['messages', params.chatThreadId]);
+
+      const optimisticMessage: Message = {
+        id: `optimistic-${Date.now()}`,
+        chat_thread_id: params.chatThreadId,
+        role: 'user',
+        content: params.content,
+        created_at: new Date().toISOString(),
+      };
+
+      queryClient.setQueryData<Message[]>(
+        ['messages', params.chatThreadId],
+        (old) => [...(old || []), optimisticMessage],
+      );
+
+      return { previous };
+    },
+    onError: (_err, params, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['messages', params.chatThreadId], context.previous);
+      }
+    },
     mutationFn: async (params: {
       chatThreadId: string;
       content: string;
-      projectId: string;
+      interviewId: string;
       subjectName?: string;
+      interviewTheme?: string;
+      interviewNumber?: number;
       attachments?: File[];
+      interviewContext?: {
+        transcriptions: { recordingName: string; text: string }[];
+        documentText: string;
+      };
     }) => {
       let messageContent = params.content;
 
@@ -56,7 +87,6 @@ export function useSendMessage() {
           attachmentUrls.push(urlData.publicUrl);
         }
 
-        // Add attachment info to message content
         if (attachmentUrls.length > 0) {
           messageContent += '\n\n[Pièces jointes: ' + params.attachments.map(f => f.name).join(', ') + ']';
         }
@@ -91,11 +121,23 @@ export function useSendMessage() {
         body: {
           messages: history || [],
           subjectName: params.subjectName,
-          projectId: params.projectId,
+          interviewId: params.interviewId,
+          interviewTheme: params.interviewTheme,
+          interviewNumber: params.interviewNumber,
+          interviewContext: params.interviewContext,
         },
       });
 
       if (aiError) throw aiError;
+
+      // Serialize sources into content for storage
+      let contentToStore = aiData.content;
+      if (aiData.sources && aiData.sources.length > 0) {
+        const sourcesBlock = aiData.sources
+          .map((s: Source) => `[${s.index}] ${s.title} | ${s.url}`)
+          .join('\n');
+        contentToStore = `${aiData.content}\n\n---sources---\n${sourcesBlock}`;
+      }
 
       // Insert AI response
       const { error: insertError } = await supabase
@@ -103,14 +145,13 @@ export function useSendMessage() {
         .insert({
           chat_thread_id: params.chatThreadId,
           role: 'assistant' as const,
-          content: aiData.content,
+          content: contentToStore,
         });
       if (insertError) throw insertError;
 
       // Auto-generate title after 2 messages if still default title
-      const messageCount = (history?.length || 0) + 2; // +2 for user and assistant messages just added
+      const messageCount = (history?.length || 0) + 2;
       if (messageCount === 2) {
-        // Get the thread to check current title
         const { data: thread } = await supabase
           .from('chat_threads')
           .select('title')
@@ -118,7 +159,6 @@ export function useSendMessage() {
           .single();
 
         if (thread?.title === 'Nouvelle discussion') {
-          // Generate a title from the first user message
           const firstUserMessage = params.content.substring(0, 50).trim();
           const title = firstUserMessage.length >= 50
             ? firstUserMessage.substring(0, 47) + '...'
@@ -132,9 +172,9 @@ export function useSendMessage() {
       }
     },
     onSuccess: (_, variables) => {
-      trackAIChatSent(variables.projectId, variables.content.length, !!(variables.attachments?.length));
+      trackAIChatSent(variables.interviewId, variables.content.length, !!(variables.attachments?.length));
       queryClient.invalidateQueries({ queryKey: ['messages', variables.chatThreadId] });
-      queryClient.invalidateQueries({ queryKey: ['chat-threads', variables.projectId] });
+      queryClient.invalidateQueries({ queryKey: ['chat-threads', variables.interviewId] });
     },
   });
 }

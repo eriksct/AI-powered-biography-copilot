@@ -18,9 +18,9 @@ export function useTranscript(recordingId: string | null) {
   });
 }
 
-export function useTranscriptSearch(projectId: string, query: string) {
+export function useTranscriptSearch(interviewId: string, query: string) {
   return useQuery({
-    queryKey: ['transcript-search', projectId, query],
+    queryKey: ['transcript-search', interviewId, query],
     queryFn: async () => {
       if (!query.trim()) return [];
 
@@ -28,15 +28,15 @@ export function useTranscriptSearch(projectId: string, query: string) {
         .from('transcripts')
         .select(`
           *,
-          recordings!inner(id, name, project_id)
+          recordings!inner(id, name, interview_id)
         `)
-        .eq('recordings.project_id', projectId)
+        .eq('recordings.interview_id', interviewId)
         .ilike('text', `%${query}%`)
         .order('segment_index', { ascending: true })
         .limit(50);
       if (error) throw error;
       return data;
     },
-    enabled: !!projectId && query.trim().length >= 2,
+    enabled: !!interviewId && query.trim().length >= 2,
   });
 }

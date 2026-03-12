@@ -26,19 +26,19 @@ function createWrapper() {
 }
 
 describe('useRecordings', () => {
-  it('fetches recordings for a project', async () => {
+  it('fetches recordings for an interview', async () => {
     const recordings = [createMockRecording(), createMockRecording({ id: 'rec-2', name: 'Entretien 2' })];
     mockFromResponse(recordings);
 
     const { wrapper } = createWrapper();
-    const { result } = renderHook(() => useRecordings('proj-1'), { wrapper });
+    const { result } = renderHook(() => useRecordings('int-1'), { wrapper });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual(recordings);
     expect(mockSupabase.from).toHaveBeenCalledWith('recordings');
   });
 
-  it('does not fetch when projectId is empty', () => {
+  it('does not fetch when interviewId is empty', () => {
     const { wrapper } = createWrapper();
     const { result } = renderHook(() => useRecordings(''), { wrapper });
     expect(result.current.isFetching).toBe(false);
@@ -48,7 +48,7 @@ describe('useRecordings', () => {
     mockFromResponse(null, { message: 'DB error' });
 
     const { wrapper } = createWrapper();
-    const { result } = renderHook(() => useRecordings('proj-1'), { wrapper });
+    const { result } = renderHook(() => useRecordings('int-1'), { wrapper });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
   });
@@ -66,7 +66,7 @@ describe('useCreateRecording', () => {
 
     const audioBlob = new Blob(['test-audio'], { type: 'audio/webm' });
     await result.current.mutateAsync({
-      projectId: 'proj-1',
+      interviewId: 'int-1',
       name: 'Test Recording',
       audioBlob,
       durationSeconds: 60,
@@ -80,7 +80,7 @@ describe('useCreateRecording', () => {
     expect(mockSupabase.from).toHaveBeenCalledWith('recordings');
 
     // Verify cache invalidation
-    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['recordings', 'proj-1'] });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['recordings', 'int-1'] });
   });
 
   it('throws when storage upload fails', async () => {
@@ -92,7 +92,7 @@ describe('useCreateRecording', () => {
     const audioBlob = new Blob(['test-audio'], { type: 'audio/webm' });
     await expect(
       result.current.mutateAsync({
-        projectId: 'proj-1',
+        interviewId: 'int-1',
         name: 'Test Recording',
         audioBlob,
         durationSeconds: 60,
@@ -115,7 +115,7 @@ describe('useDeleteRecording', () => {
     expect(mockSupabase.storage.from).toHaveBeenCalledWith('audio-recordings');
     expect(mockStorageBucket.remove).toHaveBeenCalledWith([recording.audio_path]);
     expect(mockSupabase.from).toHaveBeenCalledWith('recordings');
-    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['recordings', 'proj-1'] });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['recordings', 'int-1'] });
   });
 });
 

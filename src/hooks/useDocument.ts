@@ -4,16 +4,16 @@ import { Document } from '@/types/biography';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRef, useCallback } from 'react';
 
-export function useDocument(projectId: string) {
+export function useDocument(interviewId: string) {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ['document', projectId],
+    queryKey: ['document', interviewId],
     queryFn: async (): Promise<Document | null> => {
       const { data, error } = await supabase
         .from('documents')
         .select('*')
-        .eq('project_id', projectId)
+        .eq('interview_id', interviewId)
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -24,7 +24,7 @@ export function useDocument(projectId: string) {
         const { data: newDoc, error: createError } = await supabase
           .from('documents')
           .insert({
-            project_id: projectId,
+            interview_id: interviewId,
             user_id: user.id,
             title: 'Sans titre',
             content: {},
@@ -37,11 +37,12 @@ export function useDocument(projectId: string) {
 
       return data;
     },
-    enabled: !!projectId && !!user,
+    enabled: !!interviewId && !!user,
   });
 }
 
-export function useSaveDocument() {
+export function useSaveDocument(interviewId?: string) {
+  const queryClient = useQueryClient();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const mutation = useMutation({
@@ -51,6 +52,11 @@ export function useSaveDocument() {
         .update({ content: params.content })
         .eq('id', params.documentId);
       if (error) throw error;
+    },
+    onSuccess: () => {
+      if (interviewId) {
+        queryClient.invalidateQueries({ queryKey: ['interview-context', interviewId] });
+      }
     },
   });
 

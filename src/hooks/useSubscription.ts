@@ -22,6 +22,9 @@ export function useSubscription() {
 
   const canCreateProject = isPro || projectCount < (profile?.max_projects ?? 1);
 
+  const maxInterviewsPerProject = profile?.max_interviews_per_project ?? 2;
+  const canCreateInterview = (interviewCount: number) => isPro || interviewCount < maxInterviewsPerProject;
+
   const transcriptionSecondsUsed = profile?.transcription_seconds_used ?? 0;
   const maxTranscriptionSeconds = profile?.max_transcription_seconds ?? 7200;
   const transcriptionSecondsRemaining = maxTranscriptionSeconds - transcriptionSecondsUsed;
@@ -33,11 +36,13 @@ export function useSubscription() {
     isPro,
     isLoading,
     canCreateProject,
+    canCreateInterview,
     canTranscribe,
     transcriptionSecondsUsed,
     transcriptionSecondsRemaining,
     maxTranscriptionSeconds,
     projectCount,
     maxProjects: profile?.max_projects ?? 1,
+    maxInterviewsPerProject,
   };
 }

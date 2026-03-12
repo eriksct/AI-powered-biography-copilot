@@ -112,4 +112,32 @@ describe('useSubscription', () => {
 
     expect(result.current.projectCount).toBe(2);
   });
+
+  it('returns maxInterviewsPerProject from profile', () => {
+    mockProfileData.data = createMockProfile({ max_interviews_per_project: 5 });
+
+    const { wrapper } = createWrapper();
+    const { result } = renderHook(() => useSubscription(), { wrapper });
+
+    expect(result.current.maxInterviewsPerProject).toBe(5);
+  });
+
+  it('canCreateInterview returns true when under limit', () => {
+    mockProfileData.data = createMockProfile({ plan: 'free', max_interviews_per_project: 2 });
+
+    const { wrapper } = createWrapper();
+    const { result } = renderHook(() => useSubscription(), { wrapper });
+
+    expect(result.current.canCreateInterview(1)).toBe(true);
+    expect(result.current.canCreateInterview(2)).toBe(false);
+  });
+
+  it('canCreateInterview always returns true for pro plan', () => {
+    mockProfileData.data = createMockProfile({ plan: 'pro', max_interviews_per_project: 999 });
+
+    const { wrapper } = createWrapper();
+    const { result } = renderHook(() => useSubscription(), { wrapper });
+
+    expect(result.current.canCreateInterview(100)).toBe(true);
+  });
 });

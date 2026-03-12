@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import { trackSearchUsed } from '@/lib/analytics';
 
 interface SearchDialogProps {
-  projectId: string;
+  interviewId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSelectRecording: (recordingId: string) => void;
@@ -22,12 +22,12 @@ function formatTime(seconds: number): string {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
-export function SearchDialog({ projectId, open, onOpenChange, onSelectRecording }: SearchDialogProps) {
+export function SearchDialog({ interviewId, open, onOpenChange, onSelectRecording }: SearchDialogProps) {
   const [query, setQuery] = useState('');
-  const { data: results, isLoading } = useTranscriptSearch(projectId, query);
+  const { data: results, isLoading } = useTranscriptSearch(interviewId, query);
 
   const handleSelect = (result: any) => {
-    trackSearchUsed(projectId, query.length, results?.length ?? 0);
+    trackSearchUsed(interviewId, query.length, results?.length ?? 0);
     if (result.recordings?.id) {
       onSelectRecording(result.recordings.id);
     }

@@ -7,7 +7,8 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { supabaseConfigured } from "@/lib/supabase";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
-import Project from "./pages/Project";
+import ProjectInterviews from "./pages/ProjectInterviews";
+import Interview from "./pages/Interview";
 import Settings from "./pages/Settings";
 import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
@@ -135,7 +136,15 @@ const App = () => {
                 path="/project/:projectId"
                 element={
                   <ProtectedRoute>
-                    <Project />
+                    <ProjectInterviews />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/project/:projectId/interview/:interviewId"
+                element={
+                  <ProtectedRoute>
+                    <Interview />
                   </ProtectedRoute>
                 }
               />

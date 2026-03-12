@@ -34,7 +34,7 @@ describe('SearchDialog', () => {
   it('renders search input when open', () => {
     renderWithProviders(
       <SearchDialog
-        projectId="proj-1"
+        interviewId="int-1"
         open={true}
         onOpenChange={mockOnOpenChange}
         onSelectRecording={mockOnSelectRecording}
@@ -47,7 +47,7 @@ describe('SearchDialog', () => {
   it('shows minimum character message when query is short', () => {
     renderWithProviders(
       <SearchDialog
-        projectId="proj-1"
+        interviewId="int-1"
         open={true}
         onOpenChange={mockOnOpenChange}
         onSelectRecording={mockOnSelectRecording}
@@ -61,14 +61,14 @@ describe('SearchDialog', () => {
     mockSearchResults = [
       {
         ...createMockTranscriptSegment({ text: 'Bonjour Jean, comment allez-vous?' }),
-        recordings: { id: 'rec-1', name: 'Entretien du mardi', project_id: 'proj-1' },
+        recordings: { id: 'rec-1', name: 'Entretien du mardi', interview_id: 'int-1' },
       },
     ];
 
     const user = userEvent.setup();
     renderWithProviders(
       <SearchDialog
-        projectId="proj-1"
+        interviewId="int-1"
         open={true}
         onOpenChange={mockOnOpenChange}
         onSelectRecording={mockOnSelectRecording}
@@ -91,7 +91,7 @@ describe('SearchDialog', () => {
     const user = userEvent.setup();
     renderWithProviders(
       <SearchDialog
-        projectId="proj-1"
+        interviewId="int-1"
         open={true}
         onOpenChange={mockOnOpenChange}
         onSelectRecording={mockOnSelectRecording}
@@ -110,14 +110,14 @@ describe('SearchDialog', () => {
     mockSearchResults = [
       {
         ...createMockTranscriptSegment({ text: 'Test result' }),
-        recordings: { id: 'rec-1', name: 'Recording 1', project_id: 'proj-1' },
+        recordings: { id: 'rec-1', name: 'Recording 1', interview_id: 'int-1' },
       },
     ];
 
     const user = userEvent.setup();
     renderWithProviders(
       <SearchDialog
-        projectId="proj-1"
+        interviewId="int-1"
         open={true}
         onOpenChange={mockOnOpenChange}
         onSelectRecording={mockOnSelectRecording}
@@ -143,7 +143,7 @@ describe('SearchDialog', () => {
 
     renderWithProviders(
       <SearchDialog
-        projectId="proj-1"
+        interviewId="int-1"
         open={true}
         onOpenChange={mockOnOpenChange}
         onSelectRecording={mockOnSelectRecording}

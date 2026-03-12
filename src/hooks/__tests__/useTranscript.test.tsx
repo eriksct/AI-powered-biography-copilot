@@ -53,13 +53,13 @@ describe('useTranscriptSearch', () => {
     const results = [
       {
         ...createMockTranscriptSegment({ text: 'Bonjour Jean' }),
-        recordings: { id: 'rec-1', name: 'Entretien 1', project_id: 'proj-1' },
+        recordings: { id: 'rec-1', name: 'Entretien 1', interview_id: 'int-1' },
       },
     ];
     mockFromResponse(results);
 
     const { wrapper } = createWrapper();
-    const { result } = renderHook(() => useTranscriptSearch('proj-1', 'Jean'), { wrapper });
+    const { result } = renderHook(() => useTranscriptSearch('int-1', 'Jean'), { wrapper });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual(results);
@@ -67,17 +67,17 @@ describe('useTranscriptSearch', () => {
 
   it('does not search when query is less than 2 chars', () => {
     const { wrapper } = createWrapper();
-    const { result } = renderHook(() => useTranscriptSearch('proj-1', 'a'), { wrapper });
+    const { result } = renderHook(() => useTranscriptSearch('int-1', 'a'), { wrapper });
     expect(result.current.isFetching).toBe(false);
   });
 
   it('does not search when query is empty', () => {
     const { wrapper } = createWrapper();
-    const { result } = renderHook(() => useTranscriptSearch('proj-1', ''), { wrapper });
+    const { result } = renderHook(() => useTranscriptSearch('int-1', ''), { wrapper });
     expect(result.current.isFetching).toBe(false);
   });
 
-  it('does not search when projectId is empty', () => {
+  it('does not search when interviewId is empty', () => {
     const { wrapper } = createWrapper();
     const { result } = renderHook(() => useTranscriptSearch('', 'test'), { wrapper });
     expect(result.current.isFetching).toBe(false);

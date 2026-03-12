@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useCallback, useState, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -9,16 +9,32 @@ import { cn } from '@/lib/utils';
 import { useDocument, useSaveDocument } from '@/hooks/useDocument';
 import { Document, Packer, Paragraph, TextRun } from 'docx';
 import { saveAs } from 'file-saver';
-import { trackDocumentExported } from '@/lib/analytics';
+import { trackDocumentExported, track500WordsWritten } from '@/lib/analytics';
 
 interface TextEditorProps {
-  projectId: string;
+  interviewId: string;
 }
 
-export function TextEditor({ projectId }: TextEditorProps) {
-  const { data: document, isLoading } = useDocument(projectId);
-  const { save, isSaving } = useSaveDocument();
+export function TextEditor({ interviewId }: TextEditorProps) {
+  const { data: document, isLoading } = useDocument(interviewId);
+  const { save, isSaving } = useSaveDocument(interviewId);
   const [initialized, setInitialized] = useState(false);
+
+  // Track 500-word milestone (fires once per project)
+  const milestoneKey = `biograph_500words_${interviewId}`;
+  const milestoneFired = useRef(
+    typeof window !== 'undefined' && localStorage.getItem(milestoneKey) === 'true'
+  );
+
+  const checkWordMilestone = useCallback((text: string) => {
+    if (milestoneFired.current) return;
+    const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
+    if (wordCount >= 500) {
+      milestoneFired.current = true;
+      localStorage.setItem(milestoneKey, 'true');
+      track500WordsWritten(interviewId, wordCount);
+    }
+  }, [interviewId, milestoneKey]);
 
   const editor = useEditor({
     extensions: [
@@ -50,6 +66,7 @@ export function TextEditor({ projectId }: TextEditorProps) {
       if (document?.id) {
         save(document.id, editor.getJSON());
       }
+      checkWordMilestone(editor.getText());
     },
   });
 
@@ -82,8 +99,8 @@ export function TextEditor({ projectId }: TextEditorProps) {
 
     const blob = await Packer.toBlob(doc);
     saveAs(blob, 'biographie.docx');
-    trackDocumentExported(projectId);
-  }, [editor, projectId]);
+    trackDocumentExported(interviewId);
+  }, [editor, interviewId]);
 
   if (isLoading) {
     return (

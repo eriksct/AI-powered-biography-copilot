@@ -9,6 +9,7 @@ export interface Profile {
   transcription_seconds_used: number;
   max_projects: number;
   max_transcription_seconds: number;
+  max_interviews_per_project: number;
   created_at: string;
   updated_at: string;
 }
@@ -23,9 +24,20 @@ export interface Project {
   updated_at: string;
 }
 
-export interface Recording {
+export interface Interview {
   id: string;
   project_id: string;
+  user_id: string;
+  number: number;
+  interview_date: string;
+  theme: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Recording {
+  id: string;
+  interview_id: string;
   user_id: string;
   name: string;
   audio_path: string;
@@ -50,7 +62,7 @@ export interface TranscriptSegment {
 
 export interface Document {
   id: string;
-  project_id: string;
+  interview_id: string;
   user_id: string;
   title: string;
   content: any;
@@ -60,7 +72,7 @@ export interface Document {
 
 export interface ChatThread {
   id: string;
-  project_id: string;
+  interview_id: string;
   user_id: string;
   title: string;
   created_at: string;
@@ -74,6 +86,12 @@ export interface Message {
   role: 'user' | 'assistant' | 'system';
   content: string;
   created_at: string;
+}
+
+export interface Source {
+  index: number;
+  title: string;
+  url: string;
 }
 
 export interface Bookmark {

@@ -4,19 +4,19 @@ import { Recording } from '@/types/biography';
 import { useAuth } from '@/contexts/AuthContext';
 import { trackRecordingCompleted } from '@/lib/analytics';
 
-export function useRecordings(projectId: string) {
+export function useRecordings(interviewId: string) {
   return useQuery({
-    queryKey: ['recordings', projectId],
+    queryKey: ['recordings', interviewId],
     queryFn: async (): Promise<Recording[]> => {
       const { data, error } = await supabase
         .from('recordings')
         .select('*')
-        .eq('project_id', projectId)
+        .eq('interview_id', interviewId)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
     },
-    enabled: !!projectId,
+    enabled: !!interviewId,
   });
 }
 
@@ -26,14 +26,14 @@ export function useCreateRecording() {
 
   return useMutation({
     mutationFn: async (params: {
-      projectId: string;
+      interviewId: string;
       name: string;
       audioBlob: Blob;
       durationSeconds: number;
     }) => {
-      const { projectId, name, audioBlob, durationSeconds } = params;
+      const { interviewId, name, audioBlob, durationSeconds } = params;
       const fileExt = 'webm';
-      const fileName = `${user!.id}/${projectId}/${crypto.randomUUID()}.${fileExt}`;
+      const fileName = `${user!.id}/${interviewId}/${crypto.randomUUID()}.${fileExt}`;
 
       // Upload audio to Supabase Storage
       const { error: uploadError } = await supabase.storage
@@ -45,11 +45,10 @@ export function useCreateRecording() {
       if (uploadError) throw uploadError;
 
       // Create recording record
-      // The database trigger will automatically start transcription
       const { data, error } = await supabase
         .from('recordings')
         .insert({
-          project_id: projectId,
+          interview_id: interviewId,
           user_id: user!.id,
           name,
           audio_path: fileName,
@@ -64,8 +63,9 @@ export function useCreateRecording() {
       return data as Recording;
     },
     onSuccess: (data, variables) => {
-      trackRecordingCompleted(variables.projectId, variables.durationSeconds, variables.audioBlob.size);
-      queryClient.invalidateQueries({ queryKey: ['recordings', variables.projectId] });
+      trackRecordingCompleted(variables.interviewId, variables.durationSeconds, variables.audioBlob.size);
+      queryClient.invalidateQueries({ queryKey: ['recordings', variables.interviewId] });
+      queryClient.invalidateQueries({ queryKey: ['interview-context', variables.interviewId] });
     },
   });
 }
@@ -80,9 +80,11 @@ export function useDeleteRecording() {
       // Delete recording record (cascades to transcripts)
       const { error } = await supabase.from('recordings').delete().eq('id', recording.id);
       if (error) throw error;
+      return recording;
     },
-    onSuccess: (_, recording) => {
-      queryClient.invalidateQueries({ queryKey: ['recordings', recording.project_id] });
+    onSuccess: (recording) => {
+      queryClient.invalidateQueries({ queryKey: ['recordings', recording.interview_id] });
+      queryClient.invalidateQueries({ queryKey: ['interview-context', recording.interview_id] });
     },
   });
 }

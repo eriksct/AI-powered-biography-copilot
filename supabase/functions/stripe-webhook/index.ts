@@ -48,6 +48,7 @@ serve(async (req) => {
             subscription_status: 'active',
             max_projects: 999,
             max_transcription_seconds: 54000,
+            max_interviews_per_project: 999,
           })
           .eq('id', userId);
 
@@ -73,6 +74,7 @@ serve(async (req) => {
               subscription_status: 'active',
               max_projects: 999,
               max_transcription_seconds: 54000,
+              max_interviews_per_project: 999,
             })
             .eq('id', userId);
         } else if (status === 'past_due') {
@@ -88,6 +90,7 @@ serve(async (req) => {
               subscription_status: 'canceled',
               max_projects: 1,
               max_transcription_seconds: 7200,
+              max_interviews_per_project: 2,
             })
             .eq('id', userId);
         }
@@ -112,6 +115,7 @@ serve(async (req) => {
             subscription_status: 'canceled',
             max_projects: 1,
             max_transcription_seconds: 7200,
+            max_interviews_per_project: 2,
           })
           .eq('id', userId);
 

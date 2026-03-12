@@ -16,12 +16,13 @@ import { trackUpgradeDialogShown } from '@/lib/analytics';
 interface UpgradeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  reason?: 'projects' | 'transcription';
+  reason?: 'projects' | 'transcription' | 'interview_limit';
 }
 
 const reasonMessages = {
   projects: 'Vous avez atteint la limite de 1 projet sur le plan Gratuit.',
   transcription: 'Vous avez utilisé vos 2 heures de transcription du plan Gratuit.',
+  interview_limit: 'Vous avez atteint la limite de 2 entretiens par projet sur le plan Gratuit.',
 };
 
 const proFeatures = [
@@ -39,7 +40,7 @@ export default function UpgradeDialog({ open, onOpenChange, reason }: UpgradeDia
 
   useEffect(() => {
     if (open) {
-      const trigger = reason === 'projects' ? 'project_limit' : reason === 'transcription' ? 'transcription_limit' : 'settings';
+      const trigger = reason === 'projects' ? 'project_limit' : reason === 'transcription' ? 'transcription_limit' : reason === 'interview_limit' ? 'interview_limit' : 'settings';
       trackUpgradeDialogShown(trigger);
     }
   }, [open, reason]);

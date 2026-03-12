@@ -3,19 +3,19 @@ import { supabase } from '@/lib/supabase';
 import { ChatThread } from '@/types/biography';
 import { useAuth } from '@/contexts/AuthContext';
 
-export function useChatThreads(projectId: string) {
+export function useChatThreads(interviewId: string) {
   return useQuery({
-    queryKey: ['chat-threads', projectId],
+    queryKey: ['chat-threads', interviewId],
     queryFn: async (): Promise<ChatThread[]> => {
       const { data, error } = await supabase
         .from('chat_threads')
         .select('*')
-        .eq('project_id', projectId)
+        .eq('interview_id', interviewId)
         .order('updated_at', { ascending: false });
       if (error) throw error;
       return data;
     },
-    enabled: !!projectId,
+    enabled: !!interviewId,
   });
 }
 
@@ -24,11 +24,11 @@ export function useCreateChatThread() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (params: { projectId: string; title?: string }) => {
+    mutationFn: async (params: { interviewId: string; title?: string }) => {
       const { data, error } = await supabase
         .from('chat_threads')
         .insert({
-          project_id: params.projectId,
+          interview_id: params.interviewId,
           user_id: user!.id,
           title: params.title || 'Nouvelle discussion',
         })
@@ -38,7 +38,7 @@ export function useCreateChatThread() {
       return data as ChatThread;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['chat-threads', variables.projectId] });
+      queryClient.invalidateQueries({ queryKey: ['chat-threads', variables.interviewId] });
     },
   });
 }

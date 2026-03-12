@@ -15,6 +15,7 @@
  * - Search Used            → User searched transcripts (Cmd+K)
  * - AI Chat Sent           → User sent a message to AI assistant
  * - Document Saved         → Auto-save triggered on editor
+ * - 500 Words Written      → User crossed the 500-word milestone in editor
  * - Document Exported      → User exported to DOCX
  * - Upgrade Dialog Shown   → Free user hit a limit (project or transcription)
  * - Checkout Started       → User clicked upgrade & Stripe checkout opened
@@ -105,6 +106,15 @@ export function trackProjectDeleted(projectId: string) {
   track('Project Deleted', { project_id: projectId });
 }
 
+// Interview events
+export function trackInterviewCreated(projectId: string, interviewId: string, interviewNumber: number) {
+  track('Interview Created', { project_id: projectId, interview_id: interviewId, interview_number: interviewNumber });
+}
+
+export function trackInterviewDeleted(projectId: string, interviewId: string) {
+  track('Interview Deleted', { project_id: projectId, interview_id: interviewId });
+}
+
 // Recording events
 export function trackRecordingStarted(projectId: string) {
   track('Recording Started', { project_id: projectId });
@@ -141,12 +151,16 @@ export function trackAIChatSent(projectId: string, messageLength: number, hasAtt
 }
 
 // Document events
+export function track500WordsWritten(projectId: string, wordCount: number) {
+  track('500 Words Written', { project_id: projectId, word_count: wordCount });
+}
+
 export function trackDocumentExported(projectId: string, format: string = 'docx') {
   track('Document Exported', { project_id: projectId, format });
 }
 
 // Monetization events
-export function trackUpgradeDialogShown(trigger: 'project_limit' | 'transcription_limit' | 'settings' | 'landing') {
+export function trackUpgradeDialogShown(trigger: 'project_limit' | 'transcription_limit' | 'interview_limit' | 'settings' | 'landing') {
   track('Upgrade Dialog Shown', { trigger });
 }
 

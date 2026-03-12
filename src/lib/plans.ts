@@ -2,11 +2,13 @@ export const PLAN_LIMITS = {
   free: {
     maxProjects: 1,
     maxTranscriptionSeconds: 7200,
+    maxInterviewsPerProject: 2,
     label: 'Gratuit',
   },
   pro: {
     maxProjects: 999,
     maxTranscriptionSeconds: 54000,
+    maxInterviewsPerProject: 999,
     label: 'Professionnel',
   },
 } as const;

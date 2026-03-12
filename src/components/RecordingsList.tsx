@@ -29,7 +29,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import UpgradeDialog from '@/components/UpgradeDialog';
 
 interface RecordingsListProps {
-  projectId: string;
+  interviewId: string;
   selectedRecordingId: string | null;
   onSelectRecording: (id: string) => void;
   fullScreen?: boolean;
@@ -239,8 +239,8 @@ function TranscriptDialog({ recording, open, onOpenChange }: {
   );
 }
 
-export function RecordingsList({ projectId, selectedRecordingId, onSelectRecording, fullScreen }: RecordingsListProps) {
-  const { data: recordings, isLoading } = useRecordings(projectId);
+export function RecordingsList({ interviewId, selectedRecordingId, onSelectRecording, fullScreen }: RecordingsListProps) {
+  const { data: recordings, isLoading } = useRecordings(interviewId);
   const createRecording = useCreateRecording();
   const deleteRecording = useDeleteRecording();
   const recorder = useAudioRecorder();
@@ -278,7 +278,7 @@ export function RecordingsList({ projectId, selectedRecordingId, onSelectRecordi
     if (!pendingBlob || !recordingName.trim()) return;
     try {
       const created = await createRecording.mutateAsync({
-        projectId,
+        interviewId,
         name: recordingName.trim(),
         audioBlob: pendingBlob,
         durationSeconds: pendingDuration,
@@ -452,7 +452,7 @@ export function RecordingsList({ projectId, selectedRecordingId, onSelectRecordi
                     "text-xs text-muted-foreground",
                     fullScreen && "text-sm"
                   )}>
-                    {formatDuration(recording.duration_seconds)}
+                    {new Date(recording.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </span>
                 </div>
 

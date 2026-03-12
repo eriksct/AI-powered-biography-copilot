@@ -11,23 +11,28 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useChatThreads, useCreateChatThread } from '@/hooks/useChatThreads';
 import { useMessages, useSendMessage } from '@/hooks/useMessages';
+import { useInterviewContext } from '@/hooks/useInterviewContext';
+import { CitedMessage } from '@/components/CitedMessage';
 
 interface AIAssistantProps {
-  projectId: string;
+  interviewId: string;
   subjectName?: string;
+  interviewTheme?: string;
+  interviewNumber?: number;
 }
 
-export function AIAssistant({ projectId, subjectName }: AIAssistantProps) {
+export function AIAssistant({ interviewId, subjectName, interviewTheme, interviewNumber }: AIAssistantProps) {
   const [input, setInput] = useState('');
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { data: chats, isLoading: chatsLoading } = useChatThreads(projectId);
+  const { data: chats, isLoading: chatsLoading } = useChatThreads(interviewId);
   const createThread = useCreateChatThread();
   const { data: messages, isLoading: messagesLoading } = useMessages(activeChatId);
   const sendMessage = useSendMessage();
+  const { data: interviewContext } = useInterviewContext(interviewId);
 
   // Auto-select first chat or create one
   useEffect(() => {
@@ -49,7 +54,7 @@ export function AIAssistant({ projectId, subjectName }: AIAssistantProps) {
 
   const handleCreateChat = async () => {
     try {
-      const thread = await createThread.mutateAsync({ projectId });
+      const thread = await createThread.mutateAsync({ interviewId });
       setActiveChatId(thread.id);
     } catch {
       toast.error('Erreur lors de la création du chat');
@@ -65,7 +70,7 @@ export function AIAssistant({ projectId, subjectName }: AIAssistantProps) {
     let threadId = activeChatId;
     if (!threadId) {
       try {
-        const thread = await createThread.mutateAsync({ projectId });
+        const thread = await createThread.mutateAsync({ interviewId });
         threadId = thread.id;
         setActiveChatId(thread.id);
       } catch {
@@ -82,9 +87,12 @@ export function AIAssistant({ projectId, subjectName }: AIAssistantProps) {
       await sendMessage.mutateAsync({
         chatThreadId: threadId,
         content: content || '(pièces jointes)',
-        projectId,
+        interviewId,
         subjectName: subjectName || undefined,
+        interviewTheme,
+        interviewNumber,
         attachments: currentAttachments.length > 0 ? currentAttachments : undefined,
+        interviewContext: interviewContext || { transcriptions: [], documentText: '' },
       });
     } catch {
       toast.error("Erreur lors de l'envoi du message");
@@ -94,7 +102,11 @@ export function AIAssistant({ projectId, subjectName }: AIAssistantProps) {
   };
 
   const handleCopy = async (content: string) => {
-    await navigator.clipboard.writeText(content);
+    const separatorIndex = content.indexOf('---sources---');
+    const cleanContent = separatorIndex !== -1
+      ? content.substring(0, separatorIndex).trimEnd()
+      : content;
+    await navigator.clipboard.writeText(cleanContent);
     toast.success('Copié !');
   };
 
@@ -194,7 +206,11 @@ export function AIAssistant({ projectId, subjectName }: AIAssistantProps) {
                     : 'bg-chat-assistant text-chat-assistant-foreground rounded-bl-md'
                 )}
               >
-                <div className="whitespace-pre-wrap">{message.content}</div>
+                {message.role === 'assistant' ? (
+                  <CitedMessage content={message.content} />
+                ) : (
+                  <div className="whitespace-pre-wrap">{message.content}</div>
+                )}
 
                 {message.role === 'assistant' && (
                   <div className="flex items-center gap-1 mt-3 pt-2 border-t border-border/30">

@@ -26,7 +26,7 @@ function createWrapper() {
 }
 
 describe('useChatThreads', () => {
-  it('fetches chat threads for a project', async () => {
+  it('fetches chat threads for an interview', async () => {
     const threads = [
       createMockChatThread(),
       createMockChatThread({ id: 'thread-2', title: 'Discussion 2' }),
@@ -34,14 +34,14 @@ describe('useChatThreads', () => {
     mockFromResponse(threads);
 
     const { wrapper } = createWrapper();
-    const { result } = renderHook(() => useChatThreads('proj-1'), { wrapper });
+    const { result } = renderHook(() => useChatThreads('int-1'), { wrapper });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual(threads);
     expect(mockSupabase.from).toHaveBeenCalledWith('chat_threads');
   });
 
-  it('does not fetch when projectId is empty', () => {
+  it('does not fetch when interviewId is empty', () => {
     const { wrapper } = createWrapper();
     const { result } = renderHook(() => useChatThreads(''), { wrapper });
     expect(result.current.isFetching).toBe(false);
@@ -57,10 +57,10 @@ describe('useCreateChatThread', () => {
     const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
     const { result } = renderHook(() => useCreateChatThread(), { wrapper });
 
-    await result.current.mutateAsync({ projectId: 'proj-1' });
+    await result.current.mutateAsync({ interviewId: 'int-1' });
 
     expect(mockSupabase.from).toHaveBeenCalledWith('chat_threads');
-    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['chat-threads', 'proj-1'] });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['chat-threads', 'int-1'] });
   });
 
   it('creates a thread with custom title', async () => {
@@ -70,7 +70,7 @@ describe('useCreateChatThread', () => {
     const { wrapper } = createWrapper();
     const { result } = renderHook(() => useCreateChatThread(), { wrapper });
 
-    const created = await result.current.mutateAsync({ projectId: 'proj-1', title: 'Mon sujet' });
+    const created = await result.current.mutateAsync({ interviewId: 'int-1', title: 'Mon sujet' });
     expect(created).toEqual(newThread);
   });
 });

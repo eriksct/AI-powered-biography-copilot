@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useMessages, useSendMessage } from '../useMessages';
@@ -70,25 +69,73 @@ describe('useSendMessage', () => {
     const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
     const { result } = renderHook(() => useSendMessage(), { wrapper });
 
+    const context = {
+      transcriptions: [{ recordingName: 'Rec 1', text: 'Bonjour' }],
+      documentText: 'Mon texte',
+    };
+
     await result.current.mutateAsync({
       chatThreadId: 'thread-1',
       content: 'Aide-moi à écrire',
-      projectId: 'proj-1',
+      interviewId: 'int-1',
       subjectName: 'Jean Dupont',
+      interviewTheme: 'Enfance',
+      interviewNumber: 1,
+      interviewContext: context,
     });
 
-    // Verify edge function was invoked
+    // Verify edge function was invoked with interviewContext
     expect(mockSupabase.functions.invoke).toHaveBeenCalledWith('ai-chat', {
       body: {
         messages: history,
         subjectName: 'Jean Dupont',
-        projectId: 'proj-1',
+        interviewId: 'int-1',
+        interviewTheme: 'Enfance',
+        interviewNumber: 1,
+        interviewContext: context,
       },
     });
 
     // Verify cache invalidation
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['messages', 'thread-1'] });
-    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['chat-threads', 'proj-1'] });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['chat-threads', 'int-1'] });
+  });
+
+  it('sends without interviewContext when not provided', async () => {
+    mockFromSequence([
+      { data: null },           // insert user message
+      { data: null },           // update thread timestamp
+      { data: [] },             // get conversation history
+      { data: null },           // insert AI response
+      { data: { title: 'Nouvelle discussion' } }, // get thread title
+      { data: null },           // update title
+    ]);
+
+    mockSupabase.functions.invoke.mockResolvedValueOnce({
+      data: { content: 'Réponse' },
+      error: null,
+    });
+
+    const { wrapper } = createWrapper();
+    const { result } = renderHook(() => useSendMessage(), { wrapper });
+
+    await result.current.mutateAsync({
+      chatThreadId: 'thread-1',
+      content: 'Bonjour',
+      interviewId: 'int-1',
+    });
+
+    // interviewContext should be undefined in the body
+    expect(mockSupabase.functions.invoke).toHaveBeenCalledWith('ai-chat', {
+      body: {
+        messages: [],
+        subjectName: undefined,
+        interviewId: 'int-1',
+        interviewTheme: undefined,
+        interviewNumber: undefined,
+        interviewContext: undefined,
+      },
+    });
   });
 
   it('throws when AI edge function returns error', async () => {
@@ -110,7 +157,7 @@ describe('useSendMessage', () => {
       result.current.mutateAsync({
         chatThreadId: 'thread-1',
         content: 'Hello',
-        projectId: 'proj-1',
+        interviewId: 'int-1',
       })
     ).rejects.toEqual({ message: 'AI service unavailable' });
   });
@@ -137,7 +184,7 @@ describe('useSendMessage', () => {
     await result.current.mutateAsync({
       chatThreadId: 'thread-1',
       content: 'Raconte-moi ton enfance',
-      projectId: 'proj-1',
+      interviewId: 'int-1',
     });
 
     // Title update should have been triggered
