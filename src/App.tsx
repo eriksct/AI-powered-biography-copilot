@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -100,60 +101,84 @@ const App = () => {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter basename={import.meta.env.BASE_URL}>
-            <Routes>
-              <Route path="/" element={<Landing />} />
-              <Route
-                path="/auth"
-                element={
-                  <AuthRoute>
-                    <Auth />
-                  </AuthRoute>
-                }
-              />
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/settings"
-                element={
-                  <ProtectedRoute>
-                    <Settings />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/project/:projectId"
-                element={
-                  <ProtectedRoute>
-                    <ProjectInterviews />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/project/:projectId/interview/:interviewId"
-                element={
-                  <ProtectedRoute>
-                    <Interview />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <Sentry.ErrorBoundary
+      fallback={({ resetError }) => (
+        <div className="min-h-screen flex items-center justify-center bg-background px-4">
+          <div className="max-w-md w-full text-center space-y-6">
+            <div className="space-y-2">
+              <h1 className="text-2xl font-semibold text-foreground">Une erreur est survenue</h1>
+              <p className="text-muted-foreground text-sm">
+                L'application a rencontré un problème inattendu. L'erreur a été signalée automatiquement.
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                resetError();
+                window.location.href = import.meta.env.BASE_URL || '/';
+              }}
+              className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              Recharger la page
+            </button>
+          </div>
+        </div>
+      )}
+    >
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter basename={import.meta.env.BASE_URL}>
+              <Routes>
+                <Route path="/" element={<Landing />} />
+                <Route
+                  path="/auth"
+                  element={
+                    <AuthRoute>
+                      <Auth />
+                    </AuthRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/settings"
+                  element={
+                    <ProtectedRoute>
+                      <Settings />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/project/:projectId"
+                  element={
+                    <ProtectedRoute>
+                      <ProjectInterviews />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/project/:projectId/interview/:interviewId"
+                  element={
+                    <ProtectedRoute>
+                      <Interview />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </Sentry.ErrorBoundary>
   );
 };
 

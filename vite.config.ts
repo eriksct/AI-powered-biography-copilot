@@ -3,11 +3,15 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 
 // https://vitejs.dev/config/
 const base = "/AI-powered-biography-copilot/";
 export default defineConfig(({ mode }) => ({
   base: mode === "production" ? base : "/",
+  build: {
+    sourcemap: true,
+  },
   server: {
     host: "::",
     port: 8080,
@@ -52,6 +56,14 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ["**/*.{js,css,html,ico,svg,png,woff2}"],
       },
     }),
+    // Sentry source maps upload — only runs when SENTRY_AUTH_TOKEN is set
+    mode === "production" &&
+      process.env.SENTRY_AUTH_TOKEN &&
+      sentryVitePlugin({
+        org: "personal-bpj",
+        project: "biograph",
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+      }),
   ].filter(Boolean),
   resolve: {
     alias: {
