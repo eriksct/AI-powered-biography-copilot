@@ -5,8 +5,9 @@ import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
+const base = "/AI-powered-biography-copilot/";
 export default defineConfig(({ mode }) => ({
-  base: mode === "production" ? "/AI-powered-biography-copilot/" : "/",
+  base: mode === "production" ? base : "/",
   server: {
     host: "::",
     port: 8080,
@@ -27,7 +28,7 @@ export default defineConfig(({ mode }) => ({
         theme_color: "#3b72e8",
         background_color: "#fafafa",
         display: "standalone",
-        start_url: "/dashboard",
+        start_url: ".",
         icons: [
           {
             src: "pwa-192x192.svg",
