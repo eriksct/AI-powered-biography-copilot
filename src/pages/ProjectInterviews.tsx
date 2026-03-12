@@ -240,11 +240,13 @@ export default function ProjectInterviews() {
                 {project.subject_name || project.title}
               </h2>
               <p className="text-muted-foreground text-base">
-                {interviews?.length === 0
-                  ? "Créez votre premier entretien pour commencer."
-                  : interviews?.length === 1
-                    ? '1 entretien'
-                    : `${interviews?.length} entretiens`}
+                {!interviews
+                  ? ''
+                  : interviews.length === 0
+                    ? "Créez votre premier entretien pour commencer."
+                    : interviews.length === 1
+                      ? '1 entretien'
+                      : `${interviews.length} entretiens`}
               </p>
             </div>
             <Button className="gap-2 shadow-sm" onClick={handleNewInterviewClick}>
