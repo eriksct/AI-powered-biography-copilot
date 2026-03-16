@@ -51,10 +51,15 @@ export function useUpdateProject() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (params: { projectId: string; title: string }) => {
+    mutationFn: async (params: { projectId: string; title?: string; subject_name?: string; description?: string }) => {
+      const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
+      if (params.title !== undefined) updates.title = params.title;
+      if (params.subject_name !== undefined) updates.subject_name = params.subject_name;
+      if (params.description !== undefined) updates.description = params.description;
+
       const { data, error } = await supabase
         .from('projects')
-        .update({ title: params.title, updated_at: new Date().toISOString() })
+        .update(updates)
         .eq('id', params.projectId)
         .select()
         .single();

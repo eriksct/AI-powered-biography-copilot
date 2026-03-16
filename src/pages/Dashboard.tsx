@@ -99,6 +99,8 @@ export default function Dashboard() {
   const [editTarget, setEditTarget] = useState<Project | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editTitle, setEditTitle] = useState('');
+  const [editSubjectName, setEditSubjectName] = useState('');
+  const [editDescription, setEditDescription] = useState('');
 
   // Handle checkout success/cancel query params
   useEffect(() => {
@@ -142,18 +144,21 @@ export default function Dashboard() {
     }
   };
 
-  const handleEdit = async () => {
+  const handleEdit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!editTarget || !editTitle.trim()) return;
     try {
       await updateProject.mutateAsync({
         projectId: editTarget.id,
         title: editTitle.trim(),
+        subject_name: editSubjectName.trim(),
+        description: editDescription.trim(),
       });
-      toast.success('Projet renommé');
+      toast.success('Projet modifié');
       setEditDialogOpen(false);
       setEditTarget(null);
     } catch {
-      toast.error('Erreur lors du renommage');
+      toast.error('Erreur lors de la modification');
     }
   };
 
@@ -333,11 +338,13 @@ export default function Dashboard() {
                             e.stopPropagation();
                             setEditTarget(project);
                             setEditTitle(project.title);
+                            setEditSubjectName(project.subject_name || '');
+                            setEditDescription(project.description || '');
                             setEditDialogOpen(true);
                           }}
                         >
                           <Edit2 className="w-4 h-4 mr-2" />
-                          Renommer
+                          Modifier
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={(e) => {
@@ -446,31 +453,50 @@ export default function Dashboard() {
 
       {/* Edit dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>Renommer le projet</DialogTitle>
+            <DialogTitle>Modifier le projet</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <form onSubmit={handleEdit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-title">Nouveau titre</Label>
+              <Label htmlFor="edit-title">Titre du projet</Label>
               <Input
                 id="edit-title"
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                placeholder="Titre du projet"
+                placeholder="ex: Biographie de Madame Herveux"
+                required
                 autoFocus
-                onKeyDown={(e) => e.key === 'Enter' && handleEdit()}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-subject">Nom du sujet</Label>
+              <Input
+                id="edit-subject"
+                value={editSubjectName}
+                onChange={(e) => setEditSubjectName(e.target.value)}
+                placeholder="ex: Madame Herveux"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-description">Description (optionnel)</Label>
+              <Textarea
+                id="edit-description"
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                placeholder="Notes sur le projet..."
+                rows={3}
               />
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+              <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>
                 Annuler
               </Button>
-              <Button onClick={handleEdit} disabled={updateProject.isPending || !editTitle.trim()}>
-                {updateProject.isPending ? 'Renommage...' : 'Renommer'}
+              <Button type="submit" disabled={updateProject.isPending || !editTitle.trim()}>
+                {updateProject.isPending ? 'Enregistrement...' : 'Enregistrer'}
               </Button>
             </div>
-          </div>
+          </form>
         </DialogContent>
       </Dialog>
 
