@@ -263,17 +263,13 @@ export default function ProjectInterviews() {
           <div className="flex items-end justify-between gap-4">
             <div className="space-y-1.5">
               <h2 className="text-3xl font-bold text-foreground tracking-tight">
-                {project.subject_name || project.title}
+                {project.title}
               </h2>
-              <p className="text-muted-foreground text-base">
-                {!interviews
-                  ? ''
-                  : interviews.length === 0
-                    ? "Créez votre premier entretien pour commencer."
-                    : interviews.length === 1
-                      ? '1 entretien'
-                      : `${interviews.length} entretiens`}
-              </p>
+              {project.subject_name && (
+                <p className="text-muted-foreground text-base">
+                  {project.subject_name}
+                </p>
+              )}
             </div>
             <Button className="gap-2 shadow-sm" onClick={handleNewInterviewClick}>
               <Plus className="w-4 h-4" />
