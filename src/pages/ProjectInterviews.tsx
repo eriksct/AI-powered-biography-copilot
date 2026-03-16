@@ -289,9 +289,9 @@ export default function ProjectInterviews() {
               <div key={i} className="h-24 rounded-xl bg-secondary/50 animate-pulse" />
             ))}
           </div>
-        ) : interviews && interviews.length > 0 ? (
+        ) : (
           <div className="space-y-3">
-            {interviews.map((interview) => (
+            {interviews && interviews.map((interview) => (
               <div
                 key={interview.id}
                 className="group relative border border-border/60 rounded-xl p-5 bg-card hover:shadow-lg hover:shadow-primary/[0.06] hover:border-primary/30 transition-all duration-200 cursor-pointer"
@@ -360,23 +360,21 @@ export default function ProjectInterviews() {
                 </div>
               </div>
             ))}
-          </div>
-        ) : (
-          <div className="text-center py-20 space-y-5">
-            <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mx-auto">
-              <MessageSquareText className="w-8 h-8 text-primary" />
+
+            {/* Ghost card to create a new interview */}
+            <div
+              className="border border-dashed border-border/60 rounded-xl p-5 hover:border-primary/40 hover:bg-primary/[0.03] transition-all duration-200 cursor-pointer group"
+              onClick={handleNewInterviewClick}
+            >
+              <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg border border-dashed border-border group-hover:border-primary/40 text-muted-foreground group-hover:text-primary transition-colors">
+                  <Plus className="w-5 h-5" />
+                </div>
+                <span className="text-sm font-medium text-muted-foreground group-hover:text-primary transition-colors">
+                  Nouvel entretien
+                </span>
+              </div>
             </div>
-            <div className="space-y-2">
-              <h3 className="text-xl font-semibold text-foreground">Aucun entretien</h3>
-              <p className="text-muted-foreground max-w-sm mx-auto">
-                Commencez par créer votre premier entretien. Enregistrez la conversation et laissez
-                l'IA vous aider à rédiger.
-              </p>
-            </div>
-            <Button onClick={handleNewInterviewClick} size="lg" className="gap-2 shadow-sm">
-              <Plus className="w-4 h-4" />
-              Créer mon premier entretien
-            </Button>
           </div>
         )}
       </main>
