@@ -38,8 +38,7 @@ export default function Interview() {
 
   const handleRename = async (newLabel: string) => {
     if (!interview) return;
-    // Extract theme from label format "Entretien N — Theme"
-    const newTheme = newLabel.replace(/^Entretien \d+\s*—?\s*/, '').trim() || newLabel;
+    const newTheme = newLabel.trim();
     try {
       await updateInterview.mutateAsync({ interviewId: interview.id, theme: newTheme });
       toast.success('Entretien renommé');
@@ -82,7 +81,7 @@ export default function Interview() {
     );
   }
 
-  const interviewLabel = `Entretien ${interview.number} — ${interview.theme || ''}`.trim();
+  const interviewLabel = interview.theme || `Entretien ${interview.number}`;
 
   if (isMobile) {
     return (
