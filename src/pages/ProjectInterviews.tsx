@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { Header } from '@/components/Header';
-import { useInterviews, useCreateInterview, useDeleteInterview } from '@/hooks/useInterviews';
+import { useInterviews, useCreateInterview, useDeleteInterview, useUpdateInterview } from '@/hooks/useInterviews';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useProjectSearch, ProjectSearchResult } from '@/hooks/useProjectSearch';
 import { Project as ProjectType, Interview } from '@/types/biography';
@@ -27,7 +27,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import UpgradeDialog from '@/components/UpgradeDialog';
-import { Plus, Calendar, MessageSquareText, Trash2, Search, FileText, Clock } from 'lucide-react';
+import { Plus, Calendar, MessageSquareText, Trash2, Search, FileText, Clock, Pencil, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -119,6 +119,7 @@ export default function ProjectInterviews() {
   const { data: interviews, isLoading: interviewsLoading } = useInterviews(projectId!);
   const createInterview = useCreateInterview();
   const deleteInterview = useDeleteInterview();
+  const updateInterview = useUpdateInterview();
   const { profile } = useSubscription();
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -127,6 +128,8 @@ export default function ProjectInterviews() {
   const [theme, setTheme] = useState('');
   const [interviewDate, setInterviewDate] = useState(new Date().toISOString().split('T')[0]);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
 
   const { data: project, isLoading: projectLoading } = useQuery({
     queryKey: ['project', projectId],
@@ -192,6 +195,29 @@ export default function ProjectInterviews() {
     } catch {
       toast.error('Erreur lors de la suppression');
     }
+  };
+
+  const handleStartRename = (e: React.MouseEvent, interview: Interview) => {
+    e.stopPropagation();
+    setRenamingId(interview.id);
+    setRenameValue(interview.theme || '');
+  };
+
+  const handleConfirmRename = async (e: React.MouseEvent | React.FormEvent) => {
+    e.stopPropagation();
+    if (!renamingId || !renameValue.trim()) return;
+    try {
+      await updateInterview.mutateAsync({ interviewId: renamingId, theme: renameValue.trim() });
+      toast.success('Entretien renommé');
+    } catch {
+      toast.error('Erreur lors du renommage');
+    }
+    setRenamingId(null);
+  };
+
+  const handleCancelRename = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setRenamingId(null);
   };
 
   const formatDate = (dateStr: string) => {
@@ -277,9 +303,29 @@ export default function ProjectInterviews() {
                       {interview.number}
                     </div>
                     <div>
-                      <h3 className="font-medium text-foreground group-hover:text-primary transition-colors">
-                        {interview.theme || `Entretien ${interview.number}`}
-                      </h3>
+                      {renamingId === interview.id ? (
+                        <form onSubmit={handleConfirmRename} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1.5">
+                          <Input
+                            value={renameValue}
+                            onChange={(e) => setRenameValue(e.target.value)}
+                            className="h-8 text-sm font-medium w-48"
+                            autoFocus
+                            onKeyDown={(e) => {
+                              if (e.key === 'Escape') { e.stopPropagation(); setRenamingId(null); }
+                            }}
+                          />
+                          <Button type="submit" variant="ghost" size="icon" className="h-7 w-7 text-green-600 hover:text-green-700" disabled={!renameValue.trim()}>
+                            <Check className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={handleCancelRename}>
+                            <X className="w-3.5 h-3.5" />
+                          </Button>
+                        </form>
+                      ) : (
+                        <h3 className="font-medium text-foreground group-hover:text-primary transition-colors">
+                          {interview.theme || `Entretien ${interview.number}`}
+                        </h3>
+                      )}
                       <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
@@ -289,6 +335,16 @@ export default function ProjectInterviews() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
+                    {renamingId !== interview.id && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-foreground transition-opacity"
+                        onClick={(e) => handleStartRename(e, interview)}
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"

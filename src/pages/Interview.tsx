@@ -8,8 +8,9 @@ import { TextEditor } from '@/components/TextEditor';
 import { AIAssistant } from '@/components/AIAssistant';
 import { SearchDialog } from '@/components/SearchDialog';
 import { Project as ProjectType, Interview as InterviewType } from '@/types/biography';
-import { useInterview } from '@/hooks/useInterviews';
+import { useInterview, useUpdateInterview } from '@/hooks/useInterviews';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { toast } from 'sonner';
 
 export default function Interview() {
   const { projectId, interviewId } = useParams<{ projectId: string; interviewId: string }>();
@@ -33,6 +34,19 @@ export default function Interview() {
   });
 
   const { data: interview, isLoading: interviewLoading } = useInterview(interviewId || null);
+  const updateInterview = useUpdateInterview();
+
+  const handleRename = async (newLabel: string) => {
+    if (!interview) return;
+    // Extract theme from label format "Entretien N — Theme"
+    const newTheme = newLabel.replace(/^Entretien \d+\s*—?\s*/, '').trim() || newLabel;
+    try {
+      await updateInterview.mutateAsync({ interviewId: interview.id, theme: newTheme });
+      toast.success('Entretien renommé');
+    } catch {
+      toast.error('Erreur lors du renommage');
+    }
+  };
 
   // Keyboard shortcut for search
   useEffect(() => {
@@ -79,6 +93,7 @@ export default function Interview() {
             { label: project.title, href: `/project/${projectId}` },
             { label: interviewLabel },
           ]}
+          onRenameLastBreadcrumb={handleRename}
         />
         <div className="flex-1 overflow-hidden">
           <RecordingsList
@@ -101,6 +116,7 @@ export default function Interview() {
           { label: interviewLabel },
         ]}
         onSearchClick={() => setSearchOpen(true)}
+        onRenameLastBreadcrumb={handleRename}
       />
 
       <div className="flex flex-1 min-h-0 overflow-hidden">

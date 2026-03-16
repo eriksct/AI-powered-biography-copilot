@@ -1,7 +1,9 @@
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { BookOpen, Search, User, LogOut, ChevronRight, Settings } from 'lucide-react';
+import { BookOpen, Search, User, LogOut, ChevronRight, Settings, Pencil, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,11 +20,15 @@ interface BreadcrumbItem {
 interface HeaderProps {
   breadcrumbs: BreadcrumbItem[];
   onSearchClick?: () => void;
+  onRenameLastBreadcrumb?: (newLabel: string) => void;
 }
 
-export function Header({ breadcrumbs, onSearchClick }: HeaderProps) {
+export function Header({ breadcrumbs, onSearchClick, onRenameLastBreadcrumb }: HeaderProps) {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSignOut = async () => {
     await signOut();
@@ -51,6 +57,46 @@ export function Header({ breadcrumbs, onSearchClick }: HeaderProps) {
                     title={item.label}
                   >
                     {item.label}
+                  </button>
+                ) : isLast && onRenameLastBreadcrumb && isEditing ? (
+                  <form
+                    className="flex items-center gap-1"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (editValue.trim()) {
+                        onRenameLastBreadcrumb(editValue.trim());
+                      }
+                      setIsEditing(false);
+                    }}
+                  >
+                    <Input
+                      ref={inputRef}
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      className="h-7 text-sm font-medium w-48"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') setIsEditing(false);
+                      }}
+                      onBlur={() => {
+                        if (editValue.trim()) {
+                          onRenameLastBreadcrumb(editValue.trim());
+                        }
+                        setIsEditing(false);
+                      }}
+                    />
+                  </form>
+                ) : isLast && onRenameLastBreadcrumb ? (
+                  <button
+                    className="group/edit flex items-center gap-1.5 font-medium text-foreground truncate max-w-[250px] hover:text-primary transition-colors"
+                    title="Cliquez pour renommer"
+                    onClick={() => {
+                      setEditValue(item.label);
+                      setIsEditing(true);
+                    }}
+                  >
+                    <span className="truncate">{item.label}</span>
+                    <Pencil className="w-3 h-3 opacity-0 group-hover/edit:opacity-60 transition-opacity shrink-0" />
                   </button>
                 ) : (
                   <span className="font-medium text-foreground truncate max-w-[200px]" title={item.label}>
