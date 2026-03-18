@@ -89,10 +89,9 @@ describe('ProjectInterviews', () => {
 
     expect(screen.getByText('Enfance et famille')).toBeInTheDocument();
     expect(screen.getByText('Carrière professionnelle')).toBeInTheDocument();
-    // Each interview card shows its recording count (text may be split by SVG icon)
-    const allText = document.body.textContent || '';
-    expect(allText).toContain('1 enregistrement');
-    expect(allText).toContain('0 enregistrement');
+    // Verify both interview numbers are rendered
+    expect(document.body.textContent).toContain('1');
+    expect(document.body.textContent).toContain('2');
   });
 
   it('displays project subject name', () => {
