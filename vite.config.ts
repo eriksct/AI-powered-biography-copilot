@@ -54,6 +54,8 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,svg,png,woff2}"],
+        skipWaiting: true,
+        clientsClaim: true,
       },
     }),
     // Sentry source maps upload — only runs when SENTRY_AUTH_TOKEN is set
