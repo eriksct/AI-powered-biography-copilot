@@ -50,6 +50,7 @@ vi.mock('@/hooks/useInterviews', () => ({
   useInterviews: () => ({ data: mockInterviews, isLoading: false }),
   useCreateInterview: () => mockCreateInterview,
   useDeleteInterview: () => mockDeleteInterview,
+  useUpdateInterview: () => ({ mutateAsync: vi.fn() }),
 }));
 
 let mockMaxInterviews = 10;

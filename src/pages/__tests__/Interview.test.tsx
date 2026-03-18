@@ -41,6 +41,7 @@ vi.mock('@tanstack/react-query', async () => {
 
 vi.mock('@/hooks/useInterviews', () => ({
   useInterview: () => ({ data: mockInterview, isLoading: false }),
+  useUpdateInterview: () => ({ mutateAsync: vi.fn() }),
 }));
 
 // Mock child components to isolate page tests
