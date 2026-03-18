@@ -41,6 +41,9 @@ vi.mock('@tanstack/react-query', async () => {
       if (options.queryKey[0] === 'project') {
         return { data: mockProject, isLoading: false };
       }
+      if (options.queryKey[0] === 'recording-counts') {
+        return { data: { 'int-1': 1, 'int-2': 0 }, isLoading: false };
+      }
       return { data: undefined, isLoading: false };
     },
   };
@@ -86,7 +89,9 @@ describe('ProjectInterviews', () => {
 
     expect(screen.getByText('Enfance et famille')).toBeInTheDocument();
     expect(screen.getByText('Carrière professionnelle')).toBeInTheDocument();
-    expect(screen.getByText('2 entretiens')).toBeInTheDocument();
+    // Each interview card shows its recording count
+    expect(screen.getByText('1 enregistrement')).toBeInTheDocument();
+    expect(screen.getByText('0 enregistrements')).toBeInTheDocument();
   });
 
   it('displays project subject name', () => {
@@ -110,8 +115,10 @@ describe('ProjectInterviews', () => {
     const user = userEvent.setup();
     renderWithProviders(<ProjectInterviews />);
 
-    const newButton = screen.getByText('Nouvel entretien');
-    await user.click(newButton);
+    // Use the main button (not the ghost card) — target by role
+    const newButtons = screen.getAllByText('Nouvel entretien');
+    // Click the first one (the header button)
+    await user.click(newButtons[0]);
 
     expect(screen.getByText("Thème de l'entretien")).toBeInTheDocument();
     expect(screen.getByText("Date de l'entretien")).toBeInTheDocument();
@@ -124,8 +131,9 @@ describe('ProjectInterviews', () => {
 
     renderWithProviders(<ProjectInterviews />);
 
-    // Open dialog
-    await user.click(screen.getByText('Nouvel entretien'));
+    // Open dialog via header button
+    const newButtons = screen.getAllByText('Nouvel entretien');
+    await user.click(newButtons[0]);
 
     // Fill form
     const themeInput = screen.getByPlaceholderText('ex: Enfance et famille');
@@ -150,8 +158,9 @@ describe('ProjectInterviews', () => {
     const user = userEvent.setup();
     renderWithProviders(<ProjectInterviews />);
 
-    // 2 interviews exist and max is 2 → should show upgrade dialog
-    await user.click(screen.getByText('Nouvel entretien'));
+    // Click the header button
+    const newButtons = screen.getAllByText('Nouvel entretien');
+    await user.click(newButtons[0]);
 
     expect(screen.getByTestId('upgrade-dialog')).toBeInTheDocument();
     expect(screen.getByText(/interview_limit/)).toBeInTheDocument();

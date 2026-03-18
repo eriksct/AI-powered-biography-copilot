@@ -133,7 +133,8 @@ describe('Interview page', () => {
 
     expect(screen.getByText('Mes biographies')).toBeInTheDocument();
     expect(screen.getByText('Biographie de Marie')).toBeInTheDocument();
-    expect(screen.getByText(/Entretien 1/)).toBeInTheDocument();
+    // Breadcrumb shows theme when available, not "Entretien N"
+    expect(screen.getByText('Enfance et famille')).toBeInTheDocument();
   });
 
   it('passes interviewId to SearchDialog', () => {
