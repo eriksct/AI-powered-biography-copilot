@@ -18,7 +18,7 @@ describe('CitedMessage', () => {
   });
 
   it('renders recording sources as clickable buttons', () => {
-    const content = 'Texte [1]\n\n---sources---\n[1] Rec 1 \u2014 2:30 | recording:uuid-123?t=150';
+    const content = 'Texte [1]\n\n---sources---\n[1] Rec 1 — 2:30 | recording:uuid-123?t=150';
     // Verify parsing works
     const parsed = parseMessageContent(content);
     expect(parsed.sources).toHaveLength(1);
@@ -27,14 +27,13 @@ describe('CitedMessage', () => {
     const { container } = render(<CitedMessage content={content} />);
     const buttons = container.querySelectorAll('button');
     expect(buttons.length).toBeGreaterThanOrEqual(1);
-    // The button shows the recording name (part before " — ")
     const recButton = Array.from(buttons).find(b => b.textContent?.includes('Rec 1'));
     expect(recButton).toBeDefined();
     expect(recButton?.tagName).toBe('BUTTON');
   });
 
   it('renders inline citation pill for recording sources', () => {
-    const content = 'Il est n\u00e9 en 1940 [1]\n\n---sources---\n[1] Rec 1 \u2014 0:45 | recording:uuid?t=45';
+    const content = 'Il est né en 1940 [1]\n\n---sources---\n[1] Rec 1 — 0:45 | recording:uuid?t=45';
     const { container } = render(<CitedMessage content={content} />);
     const buttons = container.querySelectorAll('button');
     expect(buttons.length).toBeGreaterThanOrEqual(1);
@@ -44,7 +43,7 @@ describe('CitedMessage', () => {
   });
 
   it('renders mixed web and recording sources correctly', () => {
-    const content = 'Texte [1] et [2]\n\n---sources---\n[1] Rec 1 \u2014 1:00 | recording:uuid?t=60\n[2] Site | https://example.com';
+    const content = 'Texte [1] et [2]\n\n---sources---\n[1] Rec 1 — 1:00 | recording:uuid?t=60\n[2] Site | https://example.com';
     const { container } = render(<CitedMessage content={content} />);
 
     // Recording source (button, not a link)
