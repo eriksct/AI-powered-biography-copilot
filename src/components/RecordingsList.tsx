@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Mic, Square, Pause, Play, RotateCcw, RotateCw, Trash2, FileText, Copy, Check, Plus, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,11 +28,18 @@ import { useTranscript } from '@/hooks/useTranscript';
 import { useSubscription } from '@/hooks/useSubscription';
 import UpgradeDialog from '@/components/UpgradeDialog';
 
+interface TranscriptRequest {
+  recordingId: string;
+  highlightTime: number;
+}
+
 interface RecordingsListProps {
   interviewId: string;
   selectedRecordingId: string | null;
   onSelectRecording: (id: string) => void;
   fullScreen?: boolean;
+  transcriptRequest?: TranscriptRequest | null;
+  onTranscriptRequestHandled?: () => void;
 }
 
 function formatDuration(seconds: number): string {
@@ -179,15 +186,48 @@ function AudioPlayer({ recording, fullScreen }: { recording: Recording; fullScre
   );
 }
 
-function TranscriptDialog({ recording, open, onOpenChange }: {
+function TranscriptDialog({ recording, open, onOpenChange, highlightTime }: {
   recording: Recording;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  highlightTime?: number | null;
 }) {
   const { data: segments } = useTranscript(open ? recording.id : null);
   const [copied, setCopied] = useState(false);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const highlightRef = useRef<HTMLDivElement>(null);
 
   const fullText = segments?.map((s) => s.text).join(' ') || '';
+
+  // When segments load and highlightTime is set, find and highlight the matching segment
+  useEffect(() => {
+    if (!segments || segments.length === 0 || highlightTime == null) return;
+
+    // Find the segment closest to the highlight time
+    let best = segments[0];
+    for (const seg of segments) {
+      if (Math.abs(seg.start_time - highlightTime) < Math.abs(best.start_time - highlightTime)) {
+        best = seg;
+      }
+    }
+
+    setHighlightedId(best.id);
+
+    // Scroll into view after a short delay to let DOM render
+    const scrollTimer = setTimeout(() => {
+      highlightRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 150);
+
+    // Clear highlight after 3 seconds
+    const clearTimer = setTimeout(() => {
+      setHighlightedId(null);
+    }, 3000);
+
+    return () => {
+      clearTimeout(scrollTimer);
+      clearTimeout(clearTimer);
+    };
+  }, [segments, highlightTime]);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(fullText);
@@ -217,19 +257,29 @@ function TranscriptDialog({ recording, open, onOpenChange }: {
         <ScrollArea className="h-[60vh] pr-4">
           {segments && segments.length > 0 ? (
             <div className="space-y-3">
-              {segments.map((segment) => (
-                <div key={segment.id} className="flex gap-3 text-sm">
-                  <span className="text-xs text-muted-foreground font-mono shrink-0 pt-0.5">
-                    {formatDuration(Math.round(segment.start_time))}
-                  </span>
-                  <p className={cn(
-                    "text-foreground leading-relaxed",
-                    segment.confidence !== undefined && segment.confidence !== null && segment.confidence < 0.8 && "text-yellow-600 dark:text-yellow-400"
-                  )}>
-                    {segment.text}
-                  </p>
-                </div>
-              ))}
+              {segments.map((segment) => {
+                const isHighlighted = segment.id === highlightedId;
+                return (
+                  <div
+                    key={segment.id}
+                    ref={isHighlighted ? highlightRef : undefined}
+                    className={cn(
+                      "flex gap-3 text-sm rounded-md px-2 py-1 -mx-2 transition-colors duration-700",
+                      isHighlighted && "bg-primary/15 ring-1 ring-primary/30"
+                    )}
+                  >
+                    <span className="text-xs text-muted-foreground font-mono shrink-0 pt-0.5">
+                      {formatDuration(Math.round(segment.start_time))}
+                    </span>
+                    <p className={cn(
+                      "text-foreground leading-relaxed",
+                      segment.confidence !== undefined && segment.confidence !== null && segment.confidence < 0.8 && "text-yellow-600 dark:text-yellow-400"
+                    )}>
+                      {segment.text}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">Aucun transcript disponible.</p>
@@ -240,7 +290,7 @@ function TranscriptDialog({ recording, open, onOpenChange }: {
   );
 }
 
-export function RecordingsList({ interviewId, selectedRecordingId, onSelectRecording, fullScreen }: RecordingsListProps) {
+export function RecordingsList({ interviewId, selectedRecordingId, onSelectRecording, fullScreen, transcriptRequest, onTranscriptRequestHandled }: RecordingsListProps) {
   const { data: recordings, isLoading } = useRecordings(interviewId);
   const createRecording = useCreateRecording();
   const deleteRecording = useDeleteRecording();
@@ -249,6 +299,19 @@ export function RecordingsList({ interviewId, selectedRecordingId, onSelectRecor
 
   const [transcriptOpen, setTranscriptOpen] = useState(false);
   const [transcriptRecording, setTranscriptRecording] = useState<Recording | null>(null);
+  const [highlightTime, setHighlightTime] = useState<number | null>(null);
+
+  // Handle external transcript request (from citation click)
+  useEffect(() => {
+    if (!transcriptRequest || !recordings) return;
+    const recording = recordings.find((r) => r.id === transcriptRequest.recordingId);
+    if (recording) {
+      setTranscriptRecording(recording);
+      setHighlightTime(transcriptRequest.highlightTime);
+      setTranscriptOpen(true);
+      onTranscriptRequestHandled?.();
+    }
+  }, [transcriptRequest, recordings]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [recordingToDelete, setRecordingToDelete] = useState<Recording | null>(null);
   const [nameDialogOpen, setNameDialogOpen] = useState(false);
@@ -297,6 +360,7 @@ export function RecordingsList({ interviewId, selectedRecordingId, onSelectRecor
     e.stopPropagation();
     if (recording.transcription_status === 'completed') {
       setTranscriptRecording(recording);
+      setHighlightTime(null);
       setTranscriptOpen(true);
     }
   };
@@ -545,6 +609,7 @@ export function RecordingsList({ interviewId, selectedRecordingId, onSelectRecor
           recording={transcriptRecording}
           open={transcriptOpen}
           onOpenChange={setTranscriptOpen}
+          highlightTime={highlightTime}
         />
       )}
 

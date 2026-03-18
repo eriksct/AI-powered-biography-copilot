@@ -12,12 +12,29 @@ import { useInterview, useUpdateInterview } from '@/hooks/useInterviews';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 
+export interface TranscriptRequest {
+  recordingId: string;
+  highlightTime: number;
+}
+
 export default function Interview() {
   const { projectId, interviewId } = useParams<{ projectId: string; interviewId: string }>();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [selectedRecordingId, setSelectedRecordingId] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [transcriptRequest, setTranscriptRequest] = useState<TranscriptRequest | null>(null);
+
+  // Listen for citation-navigate events from CitedMessage
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { recordingId, time } = (e as CustomEvent).detail;
+      setSelectedRecordingId(recordingId);
+      setTranscriptRequest({ recordingId, highlightTime: time });
+    };
+    window.addEventListener('citation-navigate', handler);
+    return () => window.removeEventListener('citation-navigate', handler);
+  }, []);
 
   const { data: project, isLoading: projectLoading } = useQuery({
     queryKey: ['project', projectId],
@@ -125,6 +142,8 @@ export default function Interview() {
             interviewId={interview.id}
             selectedRecordingId={selectedRecordingId}
             onSelectRecording={setSelectedRecordingId}
+            transcriptRequest={transcriptRequest}
+            onTranscriptRequestHandled={() => setTranscriptRequest(null)}
           />
         </div>
 
