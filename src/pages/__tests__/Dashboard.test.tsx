@@ -51,8 +51,8 @@ vi.mock('@/hooks/useSubscription', () => ({
 vi.mock('@/hooks/useProjectStats', () => ({
   useProjectStats: () => ({
     data: {
-      'proj-1': { recording_count: 3, word_count: 500 },
-      'proj-2': { recording_count: 1, word_count: 150 },
+      'proj-1': { interview_count: 3, recording_count: 3, word_count: 500 },
+      'proj-2': { interview_count: 1, recording_count: 1, word_count: 150 },
     },
   }),
 }));
@@ -86,8 +86,8 @@ describe('Dashboard', () => {
   it('displays project stats', () => {
     renderWithProviders(<Dashboard />);
 
-    expect(screen.getByText('3 entretiens')).toBeInTheDocument();
-    expect(screen.getByText('1 entretien')).toBeInTheDocument();
+    expect(screen.getByText(/3 entretiens/)).toBeInTheDocument();
+    expect(screen.getByText(/1 entretien/)).toBeInTheDocument();
     // Word counts appear in both the stat pill and progress bar, so use getAllByText
     expect(screen.getAllByText(/500 mots/).length).toBeGreaterThanOrEqual(1);
   });

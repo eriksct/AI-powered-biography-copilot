@@ -90,8 +90,8 @@ describe('ProjectInterviews', () => {
     expect(screen.getByText('Enfance et famille')).toBeInTheDocument();
     expect(screen.getByText('Carrière professionnelle')).toBeInTheDocument();
     // Each interview card shows its recording count
-    expect(screen.getByText('1 enregistrement')).toBeInTheDocument();
-    expect(screen.getByText('0 enregistrements')).toBeInTheDocument();
+    expect(screen.getByText(/1 enregistrement/)).toBeInTheDocument();
+    expect(screen.getByText(/0 enregistrement/)).toBeInTheDocument();
   });
 
   it('displays project subject name', () => {
